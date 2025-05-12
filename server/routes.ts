@@ -108,6 +108,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error fetching leaderboard" });
     }
   });
+  
+  // Update player stats from leaderboard
+  app.patch("/api/players/:id/stats", async (req, res) => {
+    try {
+      // Check if admin is authenticated
+      if (!adminSession.authenticated) {
+        return res.status(401).json({ message: "Unauthorized. Admin access required." });
+      }
+      
+      const playerId = parseInt(req.params.id);
+      const statsData = req.body;
+      
+      const player = await storage.getPlayer(playerId);
+      
+      if (!player) {
+        return res.status(404).json({ message: "Player not found" });
+      }
+      
+      // Update only the stats portion of the player
+      const updatedPlayer = await storage.updatePlayer(playerId, {
+        stats: {
+          ...player.stats as any,
+          ...statsData
+        }
+      });
+      
+      res.json(updatedPlayer);
+    } catch (error) {
+      res.status(500).json({ message: "Error updating player stats" });
+    }
+  });
 
   // Tournaments API
   app.get("/api/tournaments", async (req, res) => {
