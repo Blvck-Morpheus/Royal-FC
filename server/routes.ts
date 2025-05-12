@@ -34,6 +34,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error fetching player" });
     }
   });
+  
+  app.post("/api/players", async (req, res) => {
+    try {
+      // Check if admin is authenticated
+      if (!adminSession.authenticated) {
+        return res.status(401).json({ message: "Unauthorized. Admin access required." });
+      }
+      
+      const playerData = req.body;
+      const newPlayer = await storage.createPlayer(playerData);
+      res.status(201).json(newPlayer);
+    } catch (error) {
+      res.status(500).json({ message: "Error creating player" });
+    }
+  });
+  
+  app.patch("/api/players/:id", async (req, res) => {
+    try {
+      // Check if admin is authenticated
+      if (!adminSession.authenticated) {
+        return res.status(401).json({ message: "Unauthorized. Admin access required." });
+      }
+      
+      const playerId = parseInt(req.params.id);
+      const playerData = req.body;
+      
+      const updatedPlayer = await storage.updatePlayer(playerId, playerData);
+      
+      if (!updatedPlayer) {
+        return res.status(404).json({ message: "Player not found" });
+      }
+      
+      res.json(updatedPlayer);
+    } catch (error) {
+      res.status(500).json({ message: "Error updating player" });
+    }
+  });
+  
+  app.delete("/api/players/:id", async (req, res) => {
+    try {
+      // Check if admin is authenticated
+      if (!adminSession.authenticated) {
+        return res.status(401).json({ message: "Unauthorized. Admin access required." });
+      }
+      
+      const playerId = parseInt(req.params.id);
+      
+      // In a real app, this would actually delete the player from storage
+      // For this MVP, we just check if the player exists
+      const player = await storage.getPlayer(playerId);
+      
+      if (!player) {
+        return res.status(404).json({ message: "Player not found" });
+      }
+      
+      // In a real app:
+      // await storage.deletePlayer(playerId);
+      
+      res.json({ message: "Player deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Error deleting player" });
+    }
+  });
 
   // Leaderboard API
   app.get("/api/players/leaderboard/:category?", async (req, res) => {

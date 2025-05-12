@@ -123,8 +123,31 @@ const AdminPage = () => {
                   <>
                     <TabsContent value="players" className="mt-6">
                       <div className="bg-white rounded-lg shadow-lg p-6">
-                        <h2 className="font-montserrat font-bold text-xl text-royal-blue mb-6">Player Management</h2>
-                        <p className="text-gray-600">This feature is only available to main admin users.</p>
+                        <h2 className="font-montserrat font-bold text-xl text-royal-blue mb-4">Player Management</h2>
+                        <p className="text-gray-600 mb-4">Add, edit, or remove players from the team roster.</p>
+                        
+                        <div className="flex justify-between items-center mb-6">
+                          <h3 className="font-montserrat font-semibold text-lg">Team Roster</h3>
+                          <Button 
+                            onClick={() => window.location.href = '/players'}
+                            className="bg-royal-blue"
+                          >
+                            <i className="ri-user-settings-line mr-2"></i>
+                            Manage Players
+                          </Button>
+                        </div>
+                        
+                        <div className="border border-gray-200 rounded-md p-4 bg-gray-50 mt-4">
+                          <div className="flex items-center">
+                            <i className="ri-information-line text-royal-blue text-xl mr-3"></i>
+                            <div>
+                              <p className="text-sm text-gray-600">
+                                You are now logged in as a main administrator. Visit the Players page to manage the team roster. 
+                                You'll be able to add new players, edit player information, and remove players from the roster.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </TabsContent>
                     

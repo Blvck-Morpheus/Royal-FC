@@ -83,17 +83,17 @@ const HomePage = () => {
             </div>
             
             <div className="bg-royal-light rounded-lg p-6 text-center">
-              <div className="text-4xl font-bold text-royal-blue mb-2">12+</div>
-              <p className="text-gray-600">Tournaments Hosted</p>
+              <div className="text-4xl font-bold text-royal-blue mb-2">25+</div>
+              <p className="text-gray-600">Matches Played</p>
             </div>
             
             <div className="bg-royal-light rounded-lg p-6 text-center">
-              <div className="text-4xl font-bold text-royal-blue mb-2">3</div>
+              <div className="text-4xl font-bold text-royal-blue mb-2">2</div>
               <p className="text-gray-600">Training Sessions Weekly</p>
             </div>
             
             <div className="bg-royal-light rounded-lg p-6 text-center">
-              <div className="text-4xl font-bold text-royal-blue mb-2">2+</div>
+              <div className="text-4xl font-bold text-royal-blue mb-2">5+</div>
               <p className="text-gray-600">Years of Community</p>
             </div>
           </div>
