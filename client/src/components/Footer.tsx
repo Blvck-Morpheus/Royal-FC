@@ -11,7 +11,7 @@ const Footer = () => {
               <Logo />
               <div>
                 <h3 className="font-montserrat font-bold text-white text-xl">Royal FC</h3>
-                <p className="text-royal-bright-blue text-xs">Asaba Amateur Club</p>
+                <p className="text-royal-bright-blue text-xs">Asaba All-stars Club</p>
                 <p className="text-slogan text-xs">WINNING FOREVER!</p>
               </div>
             </div>

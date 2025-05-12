@@ -33,6 +33,32 @@ const AboutPage = () => {
                   <li><span className="font-semibold">Fun:</span> Enjoying the beautiful game together</li>
                   <li><span className="font-semibold">Health:</span> Promoting fitness and wellbeing</li>
                 </ul>
+                
+                <h2 className="font-montserrat font-bold text-2xl text-royal-blue pt-4">Training Schedule</h2>
+                <div className="bg-white p-4 rounded-lg shadow-sm mt-2">
+                  <div className="flex items-start space-x-2 mb-3">
+                    <i className="ri-calendar-line text-royal-bright-blue mt-1"></i>
+                    <div>
+                      <p className="font-semibold">Wednesdays</p>
+                      <p className="text-gray-700">4:00 PM - 6:30 PM</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-2 mb-3">
+                    <i className="ri-calendar-line text-royal-bright-blue mt-1"></i>
+                    <div>
+                      <p className="font-semibold">Saturdays</p>
+                      <p className="text-gray-700">7:00 AM - 11:00 AM</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <i className="ri-map-pin-line text-royal-bright-blue mt-1"></i>
+                    <div>
+                      <p className="font-semibold">Location</p>
+                      <p className="text-gray-700">Saint Patricks Catholic Church Field</p>
+                      <p className="text-gray-600 text-sm">6P53+G38, Umuagu, Asaba 320242, Delta</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             
