@@ -21,22 +21,22 @@ const Footer = () => {
           <div>
             <h4 className="font-montserrat font-semibold text-lg mb-4">Quick Links</h4>
             <ul className="space-y-2">
-              <li><Link href="/"><a className="text-gray-400 hover:text-royal-bright-blue transition duration-200">Home</a></Link></li>
-              <li><Link href="/players"><a className="text-gray-400 hover:text-royal-bright-blue transition duration-200">Players</a></Link></li>
-              <li><Link href="/tournaments"><a className="text-gray-400 hover:text-royal-bright-blue transition duration-200">Tournaments</a></Link></li>
-              <li><Link href="/leaderboard"><a className="text-gray-400 hover:text-royal-bright-blue transition duration-200">Leaderboard</a></Link></li>
-              <li><Link href="/team-generator"><a className="text-gray-400 hover:text-royal-bright-blue transition duration-200">Team Generator</a></Link></li>
+              <li><Link href="/" className="text-gray-400 hover:text-royal-bright-blue transition duration-200">Home</Link></li>
+              <li><Link href="/players" className="text-gray-400 hover:text-royal-bright-blue transition duration-200">Players</Link></li>
+              <li><Link href="/tournaments" className="text-gray-400 hover:text-royal-bright-blue transition duration-200">Tournaments</Link></li>
+              <li><Link href="/leaderboard" className="text-gray-400 hover:text-royal-bright-blue transition duration-200">Leaderboard</Link></li>
+              <li><Link href="/team-generator" className="text-gray-400 hover:text-royal-bright-blue transition duration-200">Team Generator</Link></li>
             </ul>
           </div>
           
           <div>
             <h4 className="font-montserrat font-semibold text-lg mb-4">About Us</h4>
             <ul className="space-y-2">
-              <li><Link href="/about"><a className="text-gray-400 hover:text-royal-bright-blue transition duration-200">Our Story</a></Link></li>
-              <li><Link href="/about"><a className="text-gray-400 hover:text-royal-bright-blue transition duration-200">Club Values</a></Link></li>
-              <li><Link href="/about"><a className="text-gray-400 hover:text-royal-bright-blue transition duration-200">Timeline</a></Link></li>
-              <li><Link href="/contact"><a className="text-gray-400 hover:text-royal-bright-blue transition duration-200">Join the Club</a></Link></li>
-              <li><Link href="/contact"><a className="text-gray-400 hover:text-royal-bright-blue transition duration-200">Contact Us</a></Link></li>
+              <li><Link href="/about" className="text-gray-400 hover:text-royal-bright-blue transition duration-200">Our Story</Link></li>
+              <li><Link href="/about" className="text-gray-400 hover:text-royal-bright-blue transition duration-200">Club Values</Link></li>
+              <li><Link href="/about" className="text-gray-400 hover:text-royal-bright-blue transition duration-200">Timeline</Link></li>
+              <li><Link href="/contact" className="text-gray-400 hover:text-royal-bright-blue transition duration-200">Join the Club</Link></li>
+              <li><Link href="/contact" className="text-gray-400 hover:text-royal-bright-blue transition duration-200">Contact Us</Link></li>
             </ul>
           </div>
           

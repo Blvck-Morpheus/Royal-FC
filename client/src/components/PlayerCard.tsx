@@ -75,10 +75,11 @@ const PlayerCard = ({ player }: PlayerCardProps) => {
           </div>
         </div>
         
-        <Link href={`/players/${player.id}`}>
-          <a className="block text-center text-royal-blue hover:text-royal-gold transition duration-200 text-sm font-semibold">
-            View Full Profile
-          </a>
+        <Link 
+          href={`/players/${player.id}`}
+          className="block text-center text-royal-blue hover:text-royal-gold transition duration-200 text-sm font-semibold"
+        >
+          View Full Profile
         </Link>
       </div>
     </div>

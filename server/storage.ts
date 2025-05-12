@@ -641,8 +641,44 @@ export class MemStorage implements IStorage {
     
     // Sort players based on the requested category
     return players.sort((a, b) => {
-      const aValue = a.stats[category as keyof typeof a.stats] as number || 0;
-      const bValue = b.stats[category as keyof typeof b.stats] as number || 0;
+      const aStats = a.stats as any || {};
+      const bStats = b.stats as any || {};
+      
+      // Get values for the requested category
+      let aValue = 0;
+      let bValue = 0;
+      
+      switch (category) {
+        case "goals":
+          aValue = aStats.goals || 0;
+          bValue = bStats.goals || 0;
+          break;
+        case "assists":
+          aValue = aStats.assists || 0;
+          bValue = bStats.assists || 0;
+          break;
+        case "cleanSheets":
+          aValue = aStats.cleanSheets || 0;
+          bValue = bStats.cleanSheets || 0;
+          break;
+        case "tackles":
+          aValue = aStats.tackles || 0;
+          bValue = bStats.tackles || 0;
+          break;
+        case "saves":
+          aValue = aStats.saves || 0;
+          bValue = bStats.saves || 0;
+          break;
+        case "gamesPlayed":
+          aValue = aStats.gamesPlayed || 0;
+          bValue = bStats.gamesPlayed || 0;
+          break;
+        default:
+          aValue = aStats.goals || 0;
+          bValue = bStats.goals || 0;
+      }
+      
+      // Sort in descending order
       return bValue - aValue;
     });
   }
