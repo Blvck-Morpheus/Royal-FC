@@ -1,0 +1,119 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 20 14.3% 4.1%;
+  --muted: 60 4.8% 95.9%;
+  --muted-foreground: 25 5.3% 44.7%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 20 14.3% 4.1%;
+  --card: 0 0% 100%;
+  --card-foreground: 20 14.3% 4.1%;
+  --border: 20 5.9% 90%;
+  --input: 20 5.9% 90%;
+  --primary: 217 69% 24%;  /* royal-blue */
+  --primary-foreground: 211 100% 99%;
+  --secondary: 45 100% 51%; /* royal-gold */
+  --secondary-foreground: 217 69% 24%;
+  --accent: 240 6% 97%;  /* royal-light */
+  --accent-foreground: 24 9.8% 10%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 60 9.1% 97.8%;
+  --ring: 20 14.3% 4.1%;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --primary: 217 69% 24%;
+  --primary-foreground: 211 100% 99%;
+  --secondary: 45 100% 51%;
+  --secondary-foreground: 217 69% 24%;
+  --accent: 240 3.7% 15.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --ring: 240 4.9% 83.9%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-gray-50 text-gray-800;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-montserrat font-bold;
+  }
+}
+
+/* Custom classes */
+.font-montserrat {
+  font-family: 'Montserrat', sans-serif;
+}
+
+.font-open-sans {
+  font-family: 'Open Sans', sans-serif;
+}
+
+.bg-royal-blue {
+  background-color: hsl(217, 69%, 24%);
+}
+
+.bg-royal-gold {
+  background-color: hsl(45, 100%, 51%);
+}
+
+.bg-royal-light {
+  background-color: hsl(210, 50%, 96%);
+}
+
+.bg-royal-dark {
+  background-color: hsl(217, 33%, 11%);
+}
+
+.text-royal-blue {
+  color: hsl(217, 69%, 24%);
+}
+
+.text-royal-gold {
+  color: hsl(45, 100%, 51%);
+}
+
+.border-royal-blue {
+  border-color: hsl(217, 69%, 24%);
+}
+
+.border-royal-gold {
+  border-color: hsl(45, 100%, 51%);
+}
+
+.hover\:bg-royal-blue:hover {
+  background-color: hsl(217, 69%, 24%);
+}
+
+.hover\:text-royal-gold:hover {
+  color: hsl(45, 100%, 51%);
+}
+
+.hover\:bg-royal-gold:hover {
+  background-color: hsl(45, 100%, 51%);
+}
+
+.bg-hero-pattern {
+  background-image: url('https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1920&h=1080');
+}
