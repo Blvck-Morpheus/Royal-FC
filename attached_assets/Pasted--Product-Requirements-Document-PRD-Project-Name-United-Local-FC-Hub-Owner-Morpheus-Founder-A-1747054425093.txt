@@ -1,0 +1,119 @@
+📝 Product Requirements Document (PRD)
+Project Name: United Local FC Hub
+Owner: Morpheus (Founder, Admin)
+Platform: Replit (MVP Phase)
+Version: 1.0 MVP
+Date: May 2025
+
+🔧 1. Purpose
+To build an MVP web platform for an amateur football club in Asaba that fosters community, fitness, and competitive unity among 40+ members. The platform will also enable intra-club tournaments, player profiling, and serve as the club’s digital identity.
+
+🧩 2. Scope
+Phase 1 (MVP on Replit):
+Static & dynamic pages (HTML/CSS/JS or React)
+
+Use Replit DB or JSON files for persistent storage
+
+Serve from *.repl.co until domain is acquired
+
+🌐 3. Core Features
+A. Homepage
+Club name, logo/banner
+
+Tagline/mission
+
+Upcoming events/fixtures
+
+B. Players Page
+List of all players (Name, Position, Photo, Stats)
+
+JSON-powered for easy edits
+
+C. Tournaments Page
+List of active & past tournaments
+
+Fixtures + Results
+
+Auto-updated leaderboards
+
+D. Leaderboard Page
+Top players (Goals, Assists, Clean sheets)
+
+Gamified points and badge system
+
+E. Team Generator Tool
+Random team split logic (5-a-side / 7-a-side)
+
+Save and display team rosters
+
+F. Match Result Admin Panel (Restricted Access)
+Input form for match results
+
+Auto-update player stats and tables
+
+G. About Page
+Club origin, vision, and founding story
+
+H. Contact Page
+WhatsApp Group link
+
+Google Form for new members
+
+🎯 4. Objectives & Success Metrics
+Objective	Success Metric
+Centralize player info	100% of players added to the platform
+Track internal competition	2+ tournaments held with full stats logged
+Boost engagement & unity	75%+ players regularly visit/interact
+Prove seriousness for scaling	Platform uptime + positive member feedback
+
+🛠 5. Technical Requirements
+Stack Element	Technology Used
+Frontend	HTML/CSS/JavaScript or React
+Backend Logic	Node.js / Flask (optional)
+Data Persistence	Replit DB or JSON files
+Hosting	Replit
+Admin Access	Simple password/token gate
+Media	Uploaded to /assets folder
+
+👥 6. Roles & Permissions
+Role	Access Level
+Admin	Full access (add/edit/delete)
+Player	Read-only, form submissions
+Guest	Read-only
+
+📦 7. Deliverables
+ Live Replit Site (MVP)
+
+ Players.json file with member data
+
+ Team Generator logic
+
+ Leaderboard system (manual or automatic)
+
+ Tournament templates (Fixtures + Tables)
+
+ Admin Result Form
+
+ Basic CSS styling
+
+🕒 8. Timeline
+Task	Target Completion
+Basic Page Setup (HTML/CSS)	Week 1
+Add Player Profiles	Week 2
+Build Leaderboard + Tournament	Week 3
+Admin Form & Team Generator	Week 4
+Testing & Feedback	Week 5
+Launch MVP on Replit	End of Week 5
+
+🚀 9. Future Features (Post-MVP)
+Login/Registration
+
+Real-time match updates
+
+Team chat/forum
+
+Sponsorship showcase
+
+Mobile-optimized view
+
+Video highlights upload
