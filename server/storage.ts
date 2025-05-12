@@ -436,15 +436,6 @@ export class MemStorage implements IStorage {
       const players = await this.getPlayersByIds(data.playerIds);
       if (!players.length) return [];
       
-      // Shuffle players for randomness
-      const shuffledPlayers = [...players].sort(() => Math.random() - 0.5);
-      
-      // Separate by position to create balanced teams
-      const goalkeepers = shuffledPlayers.filter(p => p.position === "Goalkeeper");
-      const defenders = shuffledPlayers.filter(p => p.position === "Defender");
-      const midfielders = shuffledPlayers.filter(p => p.position === "Midfielder");
-      const forwards = shuffledPlayers.filter(p => p.position === "Forward");
-      
       // Determine how many players per team
       let playersPerTeam: number;
       switch (data.format) {
@@ -455,47 +446,188 @@ export class MemStorage implements IStorage {
       }
       
       // Calculate number of teams
-      const numTeams = Math.floor(shuffledPlayers.length / playersPerTeam);
-      if (numTeams < 2) {
-        // Not enough players for at least 2 teams
+      const teamsCount = data.teamsCount || 2;
+      const minPlayersNeeded = teamsCount * Math.ceil(playersPerTeam * 0.8); // Allow for slightly smaller teams
+      
+      if (players.length < minPlayersNeeded) {
+        // Not enough players for the requested number of teams
         return [];
       }
       
-      const teams: GeneratedTeam[] = [
-        { name: "Team Blue", players: [] },
-        { name: "Team Gold", players: [] }
+      // Initialize teams with names
+      const teamNames = [
+        "Team Blue", "Team Gold", "Team Red", "Team Green", 
+        "Team Black", "Team White", "Team Purple", "Team Orange"
       ];
       
-      // Distribute goalkeepers
-      if (goalkeepers.length >= numTeams) {
-        for (let i = 0; i < numTeams; i++) {
-          teams[i].players.push(goalkeepers[i]);
-        }
-      } else {
-        // Not enough goalkeepers, distribute what we have
-        goalkeepers.forEach((gk, i) => {
-          teams[i % numTeams].players.push(gk);
+      const teams: GeneratedTeam[] = [];
+      for (let i = 0; i < teamsCount; i++) {
+        teams.push({
+          name: teamNames[i] || `Team ${i+1}`,
+          players: [],
+          totalSkill: 0,
+          matchHistory: []
         });
       }
       
-      // Distribute remaining players by position to balance teams
-      const distributePositionPlayers = (posPlayers: Player[]) => {
-        for (let i = 0; i < posPlayers.length; i++) {
-          // Find team with fewest players
-          const teamIndex = teams
-            .map((team, idx) => ({ idx, count: team.players.length }))
-            .sort((a, b) => a.count - b.count)[0].idx;
+      // Different balancing methods
+      if (data.balanceMethod === "skill") {
+        // Sort players by skill
+        const sortedPlayers = [...players].sort((a, b) => {
+          const aSkill = (a.stats as any)?.skillRating || 3;
+          const bSkill = (b.stats as any)?.skillRating || 3;
+          return bSkill - aSkill; // Highest skill first
+        });
+        
+        // Distribute in snake draft order to balance skills
+        // 0,1,2,3,3,2,1,0,0,1,2...
+        let teamIndex = 0;
+        let direction = 1;
+        for (const player of sortedPlayers) {
+          teams[teamIndex].players.push(player);
+          teams[teamIndex].totalSkill = (teams[teamIndex].totalSkill || 0) + 
+                                        ((player.stats as any)?.skillRating || 3);
           
-          teams[teamIndex].players.push(posPlayers[i]);
+          teamIndex += direction;
           
-          // Stop if all teams have reached max capacity
-          if (teams.every(t => t.players.length >= playersPerTeam)) break;
+          // Change direction at the ends
+          if (teamIndex >= teams.length - 1) direction = -1;
+          if (teamIndex <= 0) direction = 1;
         }
-      };
+      } 
+      else if (data.balanceMethod === "position") {
+        // Similar to the original algorithm but with multiple teams
+        const goalkeepers = players.filter(p => p.position === "Goalkeeper");
+        const defenders = players.filter(p => p.position === "Defender");
+        const midfielders = players.filter(p => p.position === "Midfielder");
+        const forwards = players.filter(p => p.position === "Forward");
+        
+        // Distribute goalkeepers
+        if (goalkeepers.length >= teams.length) {
+          // One goalkeeper per team if possible
+          for (let i = 0; i < teams.length; i++) {
+            teams[i].players.push(goalkeepers[i]);
+            teams[i].totalSkill = (teams[i].totalSkill || 0) + 
+                                   ((goalkeepers[i].stats as any)?.skillRating || 3);
+          }
+        } else {
+          // Not enough goalkeepers, distribute what we have
+          goalkeepers.forEach((gk, i) => {
+            teams[i % teams.length].players.push(gk);
+            teams[i % teams.length].totalSkill = (teams[i % teams.length].totalSkill || 0) + 
+                                                ((gk.stats as any)?.skillRating || 3);
+          });
+        }
+        
+        // Helper to distribute players by position
+        const distributePositionPlayers = (posPlayers: Player[]) => {
+          // Shuffle position players for fairness
+          const shuffled = [...posPlayers].sort(() => Math.random() - 0.5);
+          
+          for (const player of shuffled) {
+            // Find team with fewest players
+            const targetTeam = teams
+              .sort((a, b) => a.players.length - b.players.length)[0];
+            
+            targetTeam.players.push(player);
+            targetTeam.totalSkill = (targetTeam.totalSkill || 0) + 
+                                   ((player.stats as any)?.skillRating || 3);
+          }
+        };
+        
+        distributePositionPlayers(defenders);
+        distributePositionPlayers(midfielders);
+        distributePositionPlayers(forwards);
+      }
+      else {
+        // Mixed method (default) - balance both skill and position
+        // First separate by position
+        const positionGroups = {
+          "Goalkeeper": players.filter(p => p.position === "Goalkeeper"),
+          "Defender": players.filter(p => p.position === "Defender"),
+          "Midfielder": players.filter(p => p.position === "Midfielder"),
+          "Forward": players.filter(p => p.position === "Forward")
+        };
+        
+        // Sort each position group by skill
+        Object.keys(positionGroups).forEach(pos => {
+          positionGroups[pos as keyof typeof positionGroups].sort((a, b) => {
+            const aSkill = (a.stats as any)?.skillRating || 3;
+            const bSkill = (b.stats as any)?.skillRating || 3;
+            return bSkill - aSkill; // Highest skill first
+          });
+        });
+        
+        // Distribute in snake pattern within each position group
+        Object.keys(positionGroups).forEach(pos => {
+          let teamIndex = 0;
+          let direction = 1;
+          
+          for (const player of positionGroups[pos as keyof typeof positionGroups]) {
+            teams[teamIndex].players.push(player);
+            teams[teamIndex].totalSkill = (teams[teamIndex].totalSkill || 0) + 
+                                         ((player.stats as any)?.skillRating || 3);
+            
+            teamIndex += direction;
+            
+            // Change direction at the ends
+            if (teamIndex >= teams.length - 1) direction = -1;
+            if (teamIndex <= 0) direction = 1;
+          }
+        });
+      }
       
-      distributePositionPlayers(defenders);
-      distributePositionPlayers(midfielders);
-      distributePositionPlayers(forwards);
+      // Select captains for each team (highest skill player)
+      teams.forEach(team => {
+        if (team.players.length > 0) {
+          const sortedPlayers = [...team.players].sort((a, b) => {
+            const aSkill = (a.stats as any)?.skillRating || 3;
+            const bSkill = (b.stats as any)?.skillRating || 3;
+            return bSkill - aSkill; // Highest skill first
+          });
+          
+          team.captain = sortedPlayers[0];
+        }
+      });
+      
+      // Consider player history for competitive mode
+      if (data.considerHistory && data.competitionMode) {
+        // Shuffle teams slightly based on past performance
+        // This helps prevent the same dominant team patterns
+        
+        // We'll swap a few players between teams based on win/loss records
+        for (let i = 0; i < teams.length; i++) {
+          for (let j = i + 1; j < teams.length; j++) {
+            // Find top performing player from each team based on win record
+            const team1TopPlayer = teams[i].players
+              .sort((a, b) => ((b.stats as any)?.teamWins || 0) - ((a.stats as any)?.teamWins || 0))[0];
+            
+            const team2TopPlayer = teams[j].players
+              .sort((a, b) => ((b.stats as any)?.teamWins || 0) - ((a.stats as any)?.teamWins || 0))[0];
+            
+            // If the win difference is significant, swap to balance
+            if (team1TopPlayer && team2TopPlayer) {
+              const team1Wins = (team1TopPlayer.stats as any)?.teamWins || 0;
+              const team2Wins = (team2TopPlayer.stats as any)?.teamWins || 0;
+              
+              if (Math.abs(team1Wins - team2Wins) > 3) {
+                // Swap players to balance teams
+                const team1Index = teams[i].players.findIndex(p => p.id === team1TopPlayer.id);
+                const team2Index = teams[j].players.findIndex(p => p.id === team2TopPlayer.id);
+                
+                if (team1Index >= 0 && team2Index >= 0) {
+                  // Check they're the same position for fair swapping
+                  if (team1TopPlayer.position === team2TopPlayer.position) {
+                    const temp = teams[i].players[team1Index];
+                    teams[i].players[team1Index] = teams[j].players[team2Index];
+                    teams[j].players[team2Index] = temp;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
       
       return teams;
     } catch (error) {

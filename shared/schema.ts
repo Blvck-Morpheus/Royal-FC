@@ -33,7 +33,11 @@ export const players = pgTable("players", {
     cleanSheets: 0,
     tackles: 0,
     saves: 0,
-    gamesPlayed: 0
+    gamesPlayed: 0,
+    skillRating: 3, // 1-5 scale for player skill level
+    teamWins: 0,    // how many times this player's team has won in team generator
+    teamLosses: 0,  // how many times this player's team has lost in team generator
+    teamDraws: 0    // how many times this player's team has drawn in team generator
   }),
   badges: jsonb("badges").$type<string[]>().default([]),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -146,6 +150,20 @@ export type MatchResult = typeof matchResults.$inferSelect;
 export type GeneratedTeam = {
   name: string;
   players: Player[];
+  captain?: Player;
+  totalSkill?: number;
+  matchHistory?: TeamMatchHistory[];
+};
+
+export type TeamMatchHistory = {
+  id: number;
+  date: Date;
+  opponentTeamName: string;
+  result: "win" | "loss" | "draw";
+  score?: {
+    goalsFor: number;
+    goalsAgainst: number;
+  };
 };
 
 // Match Result Form values
@@ -163,6 +181,10 @@ export type MatchResultFormData = {
 export type TeamGenerationRequest = {
   format: "5-a-side" | "7-a-side" | "11-a-side";
   playerIds: number[];
+  balanceMethod: "skill" | "position" | "mixed";
+  teamsCount: number;
+  considerHistory: boolean;
+  competitionMode: boolean;
 };
 
 // Contact form data

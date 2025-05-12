@@ -230,6 +230,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const schema = z.object({
         format: z.enum(["5-a-side", "7-a-side", "11-a-side"]),
         playerIds: z.array(z.number()),
+        balanceMethod: z.enum(["skill", "position", "mixed"]).default("mixed"),
+        teamsCount: z.number().min(2).max(4).default(2),
+        considerHistory: z.boolean().default(true),
+        competitionMode: z.boolean().default(true)
       });
       
       const validatedData = schema.parse(req.body) as TeamGenerationRequest;
@@ -251,6 +255,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Teams saved successfully" });
     } catch (error) {
       res.status(500).json({ message: "Error saving teams" });
+    }
+  });
+  
+  app.post("/api/team-generator/record-result", async (req, res) => {
+    try {
+      const schema = z.object({
+        teams: z.array(z.object({
+          name: z.string(),
+          players: z.array(z.object({
+            id: z.number(),
+            name: z.string(),
+            position: z.string(),
+            // other player fields optional
+          })),
+        })),
+        winningTeamIndex: z.number(),
+        isDraw: z.boolean().default(false)
+      });
+      
+      const validatedData = schema.parse(req.body);
+      
+      // Update player stats based on match result
+      const { teams, winningTeamIndex, isDraw } = validatedData;
+      
+      // Process all players in all teams
+      for (let teamIndex = 0; teamIndex < teams.length; teamIndex++) {
+        const team = teams[teamIndex];
+        
+        for (const player of team.players) {
+          const existingPlayer = await storage.getPlayer(player.id);
+          if (!existingPlayer) continue;
+          
+          const stats = existingPlayer.stats as any || {};
+          
+          // Update player stats based on match result
+          if (isDraw) {
+            stats.teamDraws = (stats.teamDraws || 0) + 1;
+          } else if (teamIndex === winningTeamIndex) {
+            stats.teamWins = (stats.teamWins || 0) + 1;
+          } else {
+            stats.teamLosses = (stats.teamLosses || 0) + 1;
+          }
+          
+          // Update games played count
+          stats.gamesPlayed = (stats.gamesPlayed || 0) + 1;
+          
+          // Save updated player stats
+          await storage.updatePlayer(player.id, { stats });
+        }
+      }
+      
+      res.json({ message: "Match result recorded successfully" });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid input", errors: error.errors });
+      }
+      res.status(500).json({ message: "Error recording match result" });
     }
   });
 
