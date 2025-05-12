@@ -13,38 +13,38 @@
   --card-foreground: 20 14.3% 4.1%;
   --border: 20 5.9% 90%;
   --input: 20 5.9% 90%;
-  --primary: 217 69% 24%;  /* royal-blue */
-  --primary-foreground: 211 100% 99%;
-  --secondary: 45 100% 51%; /* royal-gold */
-  --secondary-foreground: 217 69% 24%;
-  --accent: 240 6% 97%;  /* royal-light */
-  --accent-foreground: 24 9.8% 10%;
+  --primary: 214 70% 25%;  /* royal-deep-blue (from logo's navy blue) */
+  --primary-foreground: 210 100% 98%;
+  --secondary: 203 85% 60%; /* royal-bright-blue (from logo's bright blue) */
+  --secondary-foreground: 0 0% 100%;
+  --accent: 0 0% 96%;  /* silver-white (from logo accent) */
+  --accent-foreground: 214 70% 25%;
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 60 9.1% 97.8%;
-  --ring: 20 14.3% 4.1%;
+  --ring: 214 70% 25%;
   --radius: 0.5rem;
 }
 
 .dark {
-  --background: 240 10% 3.9%;
+  --background: 214 50% 10%;
   --foreground: 0 0% 98%;
-  --muted: 240 3.7% 15.9%;
-  --muted-foreground: 240 5% 64.9%;
-  --popover: 240 10% 3.9%;
+  --muted: 214 40% 15%;
+  --muted-foreground: 214 20% 70%;
+  --popover: 214 50% 10%;
   --popover-foreground: 0 0% 98%;
-  --card: 240 10% 3.9%;
+  --card: 214 50% 10%;
   --card-foreground: 0 0% 98%;
-  --border: 240 3.7% 15.9%;
-  --input: 240 3.7% 15.9%;
-  --primary: 217 69% 24%;
-  --primary-foreground: 211 100% 99%;
-  --secondary: 45 100% 51%;
-  --secondary-foreground: 217 69% 24%;
-  --accent: 240 3.7% 15.9%;
+  --border: 214 40% 15%;
+  --input: 214 40% 15%;
+  --primary: 214 70% 25%;
+  --primary-foreground: 210 100% 98%;
+  --secondary: 203 85% 60%;
+  --secondary-foreground: 0 0% 100%;
+  --accent: 214 40% 15%;
   --accent-foreground: 0 0% 98%;
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 98%;
-  --ring: 240 4.9% 83.9%;
+  --ring: 214 40% 70%;
 }
 
 @layer base {
@@ -71,11 +71,11 @@
 }
 
 .bg-royal-blue {
-  background-color: hsl(217, 69%, 24%);
+  background-color: hsl(214, 70%, 25%);
 }
 
-.bg-royal-gold {
-  background-color: hsl(45, 100%, 51%);
+.bg-royal-bright-blue {
+  background-color: hsl(203, 85%, 60%);
 }
 
 .bg-royal-light {
@@ -83,35 +83,47 @@
 }
 
 .bg-royal-dark {
-  background-color: hsl(217, 33%, 11%);
+  background-color: hsl(214, 50%, 10%);
 }
 
 .text-royal-blue {
-  color: hsl(217, 69%, 24%);
+  color: hsl(214, 70%, 25%);
 }
 
-.text-royal-gold {
-  color: hsl(45, 100%, 51%);
+.text-royal-bright-blue {
+  color: hsl(203, 85%, 60%);
 }
 
 .border-royal-blue {
-  border-color: hsl(217, 69%, 24%);
+  border-color: hsl(214, 70%, 25%);
 }
 
-.border-royal-gold {
-  border-color: hsl(45, 100%, 51%);
+.border-royal-bright-blue {
+  border-color: hsl(203, 85%, 60%);
 }
 
 .hover\:bg-royal-blue:hover {
-  background-color: hsl(217, 69%, 24%);
+  background-color: hsl(214, 70%, 25%);
 }
 
-.hover\:text-royal-gold:hover {
-  color: hsl(45, 100%, 51%);
+.hover\:text-royal-bright-blue:hover {
+  color: hsl(203, 85%, 60%);
 }
 
-.hover\:bg-royal-gold:hover {
-  background-color: hsl(45, 100%, 51%);
+.hover\:bg-royal-bright-blue:hover {
+  background-color: hsl(203, 85%, 60%);
+}
+
+/* Adding slogan styling */
+.text-slogan {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  letter-spacing: 1px;
+  background: linear-gradient(90deg, hsl(214, 70%, 25%), hsl(203, 85%, 60%));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .bg-hero-pattern {
