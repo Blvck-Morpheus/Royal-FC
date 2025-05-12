@@ -7,16 +7,19 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { User } from "@shared/schema";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
   password: z.string().min(1, "Password is required"),
+  loginType: z.enum(["admin", "exco"]),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 interface AdminLoginProps {
-  onLoginSuccess: () => void;
+  onLoginSuccess: (user: User) => void;
 }
 
 const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
@@ -28,6 +31,7 @@ const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
     defaultValues: {
       username: "",
       password: "",
+      loginType: "exco",
     },
   });
 
@@ -38,12 +42,24 @@ const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
       const response = await apiRequest("POST", "/api/admin/login", data);
       
       if (response.ok) {
+        const user = await response.json();
+        
+        // Check if user role matches requested login type
+        if (user.role !== data.loginType) {
+          toast({
+            title: "Access Denied",
+            description: `You do not have ${data.loginType} privileges`,
+            variant: "destructive",
+          });
+          return;
+        }
+        
         toast({
           title: "Login successful",
-          description: "You are now logged in as an admin",
+          description: `You are now logged in as ${user.role === "admin" ? "a main admin" : "an exco member"}`,
         });
         
-        onLoginSuccess();
+        onLoginSuccess(user);
       }
     } catch (error) {
       toast({
@@ -67,12 +83,47 @@ const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
+            name="loginType"
+            render={({ field }) => (
+              <FormItem className="space-y-1">
+                <FormLabel>Login Type</FormLabel>
+                <FormControl>
+                  <RadioGroup
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    className="flex space-x-4"
+                  >
+                    <FormItem className="flex items-center space-x-2 space-y-0">
+                      <FormControl>
+                        <RadioGroupItem value="admin" />
+                      </FormControl>
+                      <FormLabel className="font-normal cursor-pointer">
+                        Main Admin
+                      </FormLabel>
+                    </FormItem>
+                    <FormItem className="flex items-center space-x-2 space-y-0">
+                      <FormControl>
+                        <RadioGroupItem value="exco" />
+                      </FormControl>
+                      <FormLabel className="font-normal cursor-pointer">
+                        Exco Member
+                      </FormLabel>
+                    </FormItem>
+                  </RadioGroup>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
             name="username"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Username</FormLabel>
                 <FormControl>
-                  <Input placeholder="Admin username" {...field} />
+                  <Input placeholder="Enter username" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -86,7 +137,7 @@ const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="Admin password" {...field} />
+                  <Input type="password" placeholder="Enter password" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

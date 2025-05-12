@@ -3,13 +3,15 @@ import { Helmet } from "react-helmet";
 import { useQuery } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import AdminLogin from "@/components/AdminLogin";
 import MatchResultForm from "@/components/MatchResultForm";
 import LiveMatchAdmin from "@/components/LiveMatchAdmin";
 import { apiRequest } from "@/lib/queryClient";
+import { User } from "@shared/schema";
 
 const AdminPage = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Check if admin is already logged in
@@ -17,9 +19,14 @@ const AdminPage = () => {
     const checkAuth = async () => {
       try {
         const response = await apiRequest("GET", "/api/admin/check-auth");
-        setIsAuthenticated(response.ok);
+        if (response.ok) {
+          const userData = await response.json();
+          setCurrentUser(userData);
+        } else {
+          setCurrentUser(null);
+        }
       } catch (error) {
-        setIsAuthenticated(false);
+        setCurrentUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -28,10 +35,14 @@ const AdminPage = () => {
     checkAuth();
   }, []);
 
+  const handleLoginSuccess = (user: User) => {
+    setCurrentUser(user);
+  };
+
   const handleLogout = async () => {
     try {
       await apiRequest("POST", "/api/admin/logout");
-      setIsAuthenticated(false);
+      setCurrentUser(null);
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -63,9 +74,16 @@ const AdminPage = () => {
             <p className="text-gray-600 mt-2">Manage match results, player stats, and tournaments</p>
           </div>
           
-          {isAuthenticated ? (
+          {currentUser ? (
             <div className="max-w-5xl mx-auto">
-              <div className="flex justify-end mb-6">
+              <div className="flex justify-between mb-6 items-center">
+                <div className="flex items-center">
+                  <span className="text-gray-700 mr-2">Logged in as:</span>
+                  <span className="font-semibold">{currentUser.username}</span>
+                  <Badge className={currentUser.role === "admin" ? "bg-royal-blue ml-2" : "bg-royal-bright-blue ml-2"}>
+                    {currentUser.role === "admin" ? "Main Admin" : "Exco Member"}
+                  </Badge>
+                </div>
                 <Button 
                   variant="outline" 
                   className="bg-white"
@@ -79,8 +97,18 @@ const AdminPage = () => {
                 <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="match-results">Match Results</TabsTrigger>
                   <TabsTrigger value="live-updates">Live Updates</TabsTrigger>
-                  <TabsTrigger value="players">Players</TabsTrigger>
-                  <TabsTrigger value="tournaments">Tournaments</TabsTrigger>
+                  {currentUser.role === "admin" && (
+                    <>
+                      <TabsTrigger value="players">Players</TabsTrigger>
+                      <TabsTrigger value="tournaments">Tournaments</TabsTrigger>
+                    </>
+                  )}
+                  {currentUser.role === "exco" && (
+                    <>
+                      <TabsTrigger value="team-generator">Team Generator</TabsTrigger>
+                      <TabsTrigger value="contact-messages">Contact Messages</TabsTrigger>
+                    </>
+                  )}
                 </TabsList>
                 
                 <TabsContent value="match-results" className="mt-6">
@@ -91,24 +119,46 @@ const AdminPage = () => {
                   <LiveMatchAdmin />
                 </TabsContent>
                 
-                <TabsContent value="players" className="mt-6">
-                  <div className="bg-white rounded-lg shadow-lg p-6">
-                    <h2 className="font-montserrat font-bold text-xl text-royal-blue mb-6">Player Management</h2>
-                    <p className="text-gray-600">This feature will be available in a future update.</p>
-                  </div>
-                </TabsContent>
+                {currentUser.role === "admin" && (
+                  <>
+                    <TabsContent value="players" className="mt-6">
+                      <div className="bg-white rounded-lg shadow-lg p-6">
+                        <h2 className="font-montserrat font-bold text-xl text-royal-blue mb-6">Player Management</h2>
+                        <p className="text-gray-600">This feature is only available to main admin users.</p>
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="tournaments" className="mt-6">
+                      <div className="bg-white rounded-lg shadow-lg p-6">
+                        <h2 className="font-montserrat font-bold text-xl text-royal-blue mb-6">Tournament Management</h2>
+                        <p className="text-gray-600">This feature is only available to main admin users.</p>
+                      </div>
+                    </TabsContent>
+                  </>
+                )}
                 
-                <TabsContent value="tournaments" className="mt-6">
-                  <div className="bg-white rounded-lg shadow-lg p-6">
-                    <h2 className="font-montserrat font-bold text-xl text-royal-blue mb-6">Tournament Management</h2>
-                    <p className="text-gray-600">This feature will be available in a future update.</p>
-                  </div>
-                </TabsContent>
+                {currentUser.role === "exco" && (
+                  <>
+                    <TabsContent value="team-generator" className="mt-6">
+                      <div className="bg-white rounded-lg shadow-lg p-6">
+                        <h2 className="font-montserrat font-bold text-xl text-royal-blue mb-6">Team Generator Access</h2>
+                        <p className="text-gray-600">Access team generation features for training sessions and matches.</p>
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="contact-messages" className="mt-6">
+                      <div className="bg-white rounded-lg shadow-lg p-6">
+                        <h2 className="font-montserrat font-bold text-xl text-royal-blue mb-6">Contact Form Messages</h2>
+                        <p className="text-gray-600">View messages from the contact form.</p>
+                      </div>
+                    </TabsContent>
+                  </>
+                )}
               </Tabs>
             </div>
           ) : (
             <div className="max-w-md mx-auto">
-              <AdminLogin onLoginSuccess={() => setIsAuthenticated(true)} />
+              <AdminLogin onLoginSuccess={handleLoginSuccess} />
             </div>
           )}
         </div>
