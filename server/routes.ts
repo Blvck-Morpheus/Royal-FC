@@ -107,6 +107,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error fetching upcoming fixtures" });
     }
   });
+  
+  app.get("/api/fixtures/active", async (req, res) => {
+    try {
+      const fixtures = await storage.getActiveFixtures();
+      res.json(fixtures);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching active fixtures" });
+    }
+  });
+  
+  app.patch("/api/fixtures/:id/score", async (req, res) => {
+    try {
+      // Check if admin is authenticated
+      if (!adminSession.authenticated) {
+        return res.status(401).json({ message: "Unauthorized. Admin access required." });
+      }
+      
+      const fixtureId = parseInt(req.params.id);
+      const { homeTeamScore, awayTeamScore } = req.body;
+      
+      if (isNaN(homeTeamScore) || isNaN(awayTeamScore)) {
+        return res.status(400).json({ message: "Invalid score values" });
+      }
+      
+      const updatedFixture = await storage.updateFixture(fixtureId, {
+        homeTeamScore,
+        awayTeamScore
+      });
+      
+      if (!updatedFixture) {
+        return res.status(404).json({ message: "Fixture not found" });
+      }
+      
+      res.json(updatedFixture);
+    } catch (error) {
+      res.status(500).json({ message: "Error updating fixture score" });
+    }
+  });
+  
+  app.patch("/api/fixtures/:id/start", async (req, res) => {
+    try {
+      // Check if admin is authenticated
+      if (!adminSession.authenticated) {
+        return res.status(401).json({ message: "Unauthorized. Admin access required." });
+      }
+      
+      const fixtureId = parseInt(req.params.id);
+      
+      const updatedFixture = await storage.updateFixture(fixtureId, {
+        status: "in_progress",
+        homeTeamScore: 0,
+        awayTeamScore: 0
+      });
+      
+      if (!updatedFixture) {
+        return res.status(404).json({ message: "Fixture not found" });
+      }
+      
+      res.json(updatedFixture);
+    } catch (error) {
+      res.status(500).json({ message: "Error starting fixture" });
+    }
+  });
+  
+  app.patch("/api/fixtures/:id/end", async (req, res) => {
+    try {
+      // Check if admin is authenticated
+      if (!adminSession.authenticated) {
+        return res.status(401).json({ message: "Unauthorized. Admin access required." });
+      }
+      
+      const fixtureId = parseInt(req.params.id);
+      const { homeTeamScore, awayTeamScore } = req.body;
+      
+      if (isNaN(homeTeamScore) || isNaN(awayTeamScore)) {
+        return res.status(400).json({ message: "Invalid score values" });
+      }
+      
+      const updatedFixture = await storage.updateFixture(fixtureId, {
+        status: "completed",
+        homeTeamScore,
+        awayTeamScore
+      });
+      
+      if (!updatedFixture) {
+        return res.status(404).json({ message: "Fixture not found" });
+      }
+      
+      // Update team standings
+      await storage.recordMatchResult({
+        fixtureId: fixtureId.toString(),
+        homeTeamScore,
+        awayTeamScore,
+        scorers: []
+      });
+      
+      res.json(updatedFixture);
+    } catch (error) {
+      res.status(500).json({ message: "Error ending fixture" });
+    }
+  });
 
   app.get("/api/fixtures/:id", async (req, res) => {
     try {

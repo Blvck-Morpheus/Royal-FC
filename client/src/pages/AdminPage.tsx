@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import AdminLogin from "@/components/AdminLogin";
 import MatchResultForm from "@/components/MatchResultForm";
+import LiveMatchAdmin from "@/components/LiveMatchAdmin";
 import { apiRequest } from "@/lib/queryClient";
 
 const AdminPage = () => {
@@ -75,14 +76,19 @@ const AdminPage = () => {
               </div>
               
               <Tabs defaultValue="match-results">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="match-results">Match Results</TabsTrigger>
+                  <TabsTrigger value="live-updates">Live Updates</TabsTrigger>
                   <TabsTrigger value="players">Players</TabsTrigger>
                   <TabsTrigger value="tournaments">Tournaments</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="match-results" className="mt-6">
                   <MatchResultForm />
+                </TabsContent>
+                
+                <TabsContent value="live-updates" className="mt-6">
+                  <LiveMatchAdmin />
                 </TabsContent>
                 
                 <TabsContent value="players" className="mt-6">

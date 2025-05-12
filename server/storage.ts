@@ -45,6 +45,7 @@ export interface IStorage {
   getFixtures(): Promise<Fixture[]>;
   getFixturesByTournament(tournamentId: number): Promise<Fixture[]>;
   getUpcomingFixtures(): Promise<Fixture[]>;
+  getActiveFixtures(): Promise<Fixture[]>;
   createFixture(fixture: InsertFixture): Promise<Fixture>;
   updateFixture(id: number, fixture: Partial<Fixture>): Promise<Fixture | undefined>;
 
@@ -279,6 +280,12 @@ export class MemStorage implements IStorage {
       )
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .slice(0, 3); // Get next 3 fixtures
+  }
+  
+  async getActiveFixtures(): Promise<Fixture[]> {
+    return Array.from(this.fixtures.values())
+      .filter(fixture => fixture.status === "in_progress")
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }
 
   async createFixture(fixture: InsertFixture): Promise<Fixture> {

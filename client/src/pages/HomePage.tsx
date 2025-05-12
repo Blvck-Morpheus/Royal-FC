@@ -1,6 +1,7 @@
 import { Helmet } from "react-helmet";
 import Hero from "@/components/Hero";
 import UpcomingFixtures from "@/components/UpcomingFixtures";
+import LiveMatchUpdates from "@/components/LiveMatchUpdates";
 import { Link } from "wouter";
 
 const HomePage = () => {
@@ -12,6 +13,7 @@ const HomePage = () => {
       </Helmet>
       
       <Hero />
+      <LiveMatchUpdates />
       <UpcomingFixtures />
       
       {/* Quick Links Section */}
