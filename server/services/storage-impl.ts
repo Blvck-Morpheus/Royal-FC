@@ -326,45 +326,37 @@ export class MemStorageImpl extends MemStorage {
       }
     ];
     
+    // Create players and store their IDs
+    const createdPlayers = [];
     for (const player of players) {
-      await this.createPlayer(player as any);
+      const createdPlayer = await this.createPlayer(player as any);
+      createdPlayers.push(createdPlayer);
     }
     
     // Create a tournament
     const tournament = await this.createTournament({
       name: "Summer Tournament",
-      status: "active",
-      startDate: new Date("2023-06-01"),
-      endDate: new Date("2023-06-30"),
+      startDate: new Date("2024-06-01").toISOString(),
+      endDate: new Date("2024-06-30").toISOString(),
       description: "Annual summer tournament",
-      format: "5-a-side"
+      format: "5-a-side",
+      maxTeams: 4,
+      registrationDeadline: new Date("2024-05-25").toISOString()
     });
     
-    // Create teams
+    // Create teams with proper player assignments
     const team1 = await this.createTournamentTeam({
       tournamentId: tournament.id,
       name: "Team Alpha",
-      captainId: 1,
-      played: 2,
-      won: 1,
-      drawn: 1,
-      lost: 0,
-      goalsFor: 5,
-      goalsAgainst: 3,
-      points: 4
+      captainId: createdPlayers[0].id, // Jamal Okoye as captain
+      playerIds: [createdPlayers[0].id, createdPlayers[2].id, createdPlayers[3].id] // First 3 players
     });
     
     const team2 = await this.createTournamentTeam({
       tournamentId: tournament.id,
       name: "Team Beta",
-      captainId: 2,
-      played: 2,
-      won: 0,
-      drawn: 1,
-      lost: 1,
-      goalsFor: 3,
-      goalsAgainst: 5,
-      points: 1
+      captainId: createdPlayers[1].id, // Kwame Nduka as captain
+      playerIds: [createdPlayers[1].id, createdPlayers[4].id] // Other 2 players
     });
     
     // Create fixtures
@@ -378,7 +370,7 @@ export class MemStorageImpl extends MemStorage {
       awayTeamCaptain: "K. Nduka",
       homeTeamScore: 3,
       awayTeamScore: 1,
-      date: new Date("2023-06-15T14:00:00"),
+      date: new Date("2024-06-15T14:00:00"),
       location: "Main Pitch",
       status: "completed",
       tournamentName: tournament.name
@@ -394,7 +386,7 @@ export class MemStorageImpl extends MemStorage {
       awayTeamCaptain: "J. Okoye",
       homeTeamScore: 2,
       awayTeamScore: 2,
-      date: new Date("2023-06-18T14:00:00"),
+      date: new Date("2024-06-18T14:00:00"),
       location: "Main Pitch",
       status: "completed",
       tournamentName: tournament.name
