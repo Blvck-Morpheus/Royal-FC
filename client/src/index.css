@@ -53,7 +53,7 @@
   }
 
   body {
-    @apply font-sans antialiased bg-gray-50 text-gray-800;
+    @apply font-sans antialiased bg-white text-gray-800;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -125,4 +125,13 @@
 
 .bg-hero-pattern {
   background-image: url('https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1920&h=1080');
+}
+
+/* Explicit gradient classes with hex values */
+.bg-blue-gradient {
+  background: linear-gradient(to top, #0c3b80 90%, #0c3b8050 30%);
+}
+
+.bg-blue-gradient-horizontal {
+  background: linear-gradient(to right, #0c3b80, #3498db);
 }

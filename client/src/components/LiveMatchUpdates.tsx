@@ -21,7 +21,7 @@ const LiveMatchUpdates = () => {
 
   if (isLoading) {
     return (
-      <section className="py-8 bg-royal-blue text-white">
+      <section className="py-8 text-white" style={{ backgroundColor: '#0c3b80' }}>
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-4">
             <h2 className="font-montserrat font-bold text-2xl">Live Matches</h2>
@@ -37,7 +37,7 @@ const LiveMatchUpdates = () => {
 
   if (error) {
     return (
-      <section className="py-8 bg-royal-blue text-white">
+      <section className="py-8 text-white" style={{ backgroundColor: '#0c3b80' }}>
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-4">
             <h2 className="font-montserrat font-bold text-2xl">Live Matches</h2>
@@ -58,7 +58,7 @@ const LiveMatchUpdates = () => {
   }
 
   return (
-    <section className="py-8 bg-royal-blue text-white">
+    <section className="py-8 text-white" style={{ backgroundColor: '#0c3b80' }}>
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-4">
           <h2 className="font-montserrat font-bold text-2xl">Live Matches</h2>
@@ -66,14 +66,14 @@ const LiveMatchUpdates = () => {
             Last updated: {format(lastUpdateTime, 'h:mm:ss a')}
           </span>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {activeMatches.map((match) => (
             <div key={match.id} className="bg-white/10 p-4 rounded-lg hover:bg-white/20 transition-colors duration-200">
               <div className="text-center text-royal-gold text-sm mb-2">
                 {match.tournamentName} • {format(new Date(match.date), 'MMM d, yyyy')}
               </div>
-              
+
               <div className="flex justify-between items-center">
                 <div className="text-center flex-1">
                   <p className="font-semibold text-lg">{match.homeTeamName}</p>
@@ -81,7 +81,7 @@ const LiveMatchUpdates = () => {
                     {match.homeTeamCaptain && <p>Captain: {match.homeTeamCaptain}</p>}
                   </div>
                 </div>
-                
+
                 <div className="flex-shrink-0 mx-4">
                   <div className="flex items-center space-x-2">
                     <div className="bg-royal-gold text-royal-blue font-bold text-2xl rounded-md w-12 h-12 flex items-center justify-center">
@@ -98,7 +98,7 @@ const LiveMatchUpdates = () => {
                     </span>
                   </div>
                 </div>
-                
+
                 <div className="text-center flex-1">
                   <p className="font-semibold text-lg">{match.awayTeamName}</p>
                   <div className="mt-1 text-xs opacity-75">
@@ -106,7 +106,7 @@ const LiveMatchUpdates = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="mt-4 text-center text-sm">
                 <p>
                   <i className="ri-map-pin-line mr-1"></i> {match.location}
@@ -115,7 +115,7 @@ const LiveMatchUpdates = () => {
             </div>
           ))}
         </div>
-        
+
         <div className="text-center text-sm mt-4">
           <p>Scores automatically update every 30 seconds</p>
         </div>

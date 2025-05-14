@@ -31,7 +31,6 @@ const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
     defaultValues: {
       username: "",
       password: "",
-      loginType: "exco",
     },
   });
 
@@ -39,32 +38,46 @@ const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
     try {
       setIsLoggingIn(true);
       
+      console.log("Attempting login with:", {
+        ...data,
+        password: '***'
+      });
+      
       const response = await apiRequest("POST", "/api/admin/login", data);
       
-      if (response.ok) {
-        const user = await response.json();
-        
-        // Check if user role matches requested login type
-        if (user.role !== data.loginType) {
-          toast({
-            title: "Access Denied",
-            description: `You do not have ${data.loginType} privileges`,
-            variant: "destructive",
-          });
-          return;
-        }
-        
+      if (!response.ok) {
+        const errorData = await response.json();
         toast({
-          title: "Login successful",
-          description: `You are now logged in as ${user.role === "admin" ? "a main admin" : "an exco member"}`,
+          title: "Login failed",
+          description: errorData.message || "Invalid credentials",
+          variant: "destructive",
         });
-        
-        onLoginSuccess(user);
+        return;
       }
+      
+      const userData = await response.json();
+      console.log("Login response:", userData);
+      
+      if (userData.role !== data.loginType) {
+        toast({
+          title: "Access Denied",
+          description: `You do not have ${data.loginType} privileges. Your role is ${userData.role}.`,
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      toast({
+        title: "Login successful",
+        description: `You are now logged in as ${userData.role === "admin" ? "a main admin" : "an exco member"}`,
+      });
+      
+      onLoginSuccess(userData);
     } catch (error) {
+      console.error("Login error:", error);
       toast({
         title: "Login failed",
-        description: (error as Error).message || "Invalid credentials",
+        description: error instanceof Error ? error.message : "An error occurred during login",
         variant: "destructive",
       });
     } finally {

@@ -146,46 +146,81 @@ export const insertMatchResultSchema = createInsertSchema(matchResults).omit({
 export type InsertMatchResult = z.infer<typeof insertMatchResultSchema>;
 export type MatchResult = typeof matchResults.$inferSelect;
 
-// Generated team for team generator feature
-export type GeneratedTeam = {
+// Player types
+export interface PlayerStats {
+  goals: number;
+  assists: number;
+  cleanSheets: number;
+  tackles: number;
+  saves: number;
+  gamesPlayed: number;
+  skillRating: number;
+  teamWins?: number;
+  teamLosses?: number;
+  teamDraws?: number;
+  formRating?: number;
+  positionRating?: number;
+}
+
+export interface PlayerMetrics {
+  winRate: number;
+  formRating: number;
+  skillRating: number;
+  positionStrength: number;
+}
+
+export interface Player {
+  id: number;
+  name: string;
+  position: string;
+  jerseyNumber: number;
+  photoUrl?: string;
+  stats: PlayerStats;
+  badges: string[];
+  createdAt: Date;
+  metrics?: PlayerMetrics;
+}
+
+export interface InsertPlayer {
+  name: string;
+  position: string;
+  jerseyNumber: number;
+  photoUrl?: string;
+  stats?: Partial<PlayerStats>;
+  badges?: string[];
+}
+
+// Team types
+export interface TeamMatchHistory {
+  date: Date;
+  opponent: string;
+  result: 'win' | 'loss' | 'draw';
+  score: {
+    for: number;
+    against: number;
+  };
+}
+
+export interface GeneratedTeam {
   name: string;
   players: Player[];
   captain?: Player;
-  totalSkill?: number;
-  matchHistory?: TeamMatchHistory[];
-};
+  totalSkill: number;
+  matchHistory: TeamMatchHistory[];
+  averageWinRate: number;
+  positionBalance: number;
+}
 
-export type TeamMatchHistory = {
-  id: number;
-  date: Date;
-  opponentTeamName: string;
-  result: "win" | "loss" | "draw";
-  score?: {
-    goalsFor: number;
-    goalsAgainst: number;
-  };
-};
-
-// Match Result Form values
-export type MatchResultFormData = {
-  fixtureId: string;
-  homeTeamScore: number;
-  awayTeamScore: number;
-  scorers: {
-    playerId: string;
-    goals: number;
-  }[];
-};
-
-// Team Generation Request
-export type TeamGenerationRequest = {
-  format: "5-a-side" | "7-a-side" | "11-a-side";
+export interface TeamGenerationRequest {
+  format: '5-a-side' | '7-a-side' | '11-a-side';
   playerIds: number[];
-  balanceMethod: "skill" | "position" | "mixed";
+  balanceMethod: 'skill' | 'position' | 'mixed';
   teamsCount: number;
   considerHistory: boolean;
   competitionMode: boolean;
-};
+  matchType?: 'friendly' | 'tournament' | 'training';
+  balancingPriority?: 'competitive' | 'development' | 'mixed';
+}
 
 // Contact form data
 export type ContactFormData = {
@@ -197,3 +232,50 @@ export type ContactFormData = {
   message: string;
   termsAccepted: boolean;
 };
+
+// Tournament types
+export interface Tournament {
+  id: number;
+  name: string;
+  startDate: Date;
+  endDate: Date;
+  status: 'upcoming' | 'ongoing' | 'completed';
+  description?: string;
+  format: '5-a-side' | '7-a-side' | '11-a-side';
+  maxTeams: number;
+  registrationDeadline: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateTournamentInput {
+  name: string;
+  startDate: string;
+  endDate: string;
+  description?: string;
+  format: '5-a-side' | '7-a-side' | '11-a-side';
+  maxTeams: number;
+  registrationDeadline: string;
+}
+
+export interface TournamentTeam {
+  id: number;
+  tournamentId: number;
+  name: string;
+  captain: Player;
+  players: Player[];
+  wins: number;
+  losses: number;
+  draws: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  points: number;
+  createdAt: Date;
+}
+
+export interface CreateTournamentTeamInput {
+  tournamentId: number;
+  name: string;
+  captainId: number;
+  playerIds: number[];
+}

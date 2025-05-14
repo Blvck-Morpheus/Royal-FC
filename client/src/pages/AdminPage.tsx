@@ -7,8 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import AdminLogin from "@/components/AdminLogin";
 import MatchResultForm from "@/components/MatchResultForm";
 import LiveMatchAdmin from "@/components/LiveMatchAdmin";
+import PlayerManagement from "@/components/PlayerManagement";
 import { apiRequest } from "@/lib/queryClient";
 import { User } from "@shared/schema";
+import UserManagement from "@/components/UserManagement";
+import TournamentManagement from "@/components/TournamentManagement";
 
 const AdminPage = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -101,6 +104,7 @@ const AdminPage = () => {
                     <>
                       <TabsTrigger value="players">Players</TabsTrigger>
                       <TabsTrigger value="tournaments">Tournaments</TabsTrigger>
+                      <TabsTrigger value="users">User Management</TabsTrigger>
                     </>
                   )}
                   {currentUser.role === "exco" && (
@@ -124,37 +128,24 @@ const AdminPage = () => {
                     <TabsContent value="players" className="mt-6">
                       <div className="bg-white rounded-lg shadow-lg p-6">
                         <h2 className="font-montserrat font-bold text-xl text-royal-blue mb-4">Player Management</h2>
-                        <p className="text-gray-600 mb-4">Add, edit, or remove players from the team roster.</p>
-                        
-                        <div className="flex justify-between items-center mb-6">
-                          <h3 className="font-montserrat font-semibold text-lg">Team Roster</h3>
-                          <Button 
-                            onClick={() => window.location.href = '/players'}
-                            className="bg-royal-blue"
-                          >
-                            <i className="ri-user-settings-line mr-2"></i>
-                            Manage Players
-                          </Button>
-                        </div>
-                        
-                        <div className="border border-gray-200 rounded-md p-4 bg-gray-50 mt-4">
-                          <div className="flex items-center">
-                            <i className="ri-information-line text-royal-blue text-xl mr-3"></i>
-                            <div>
-                              <p className="text-sm text-gray-600">
-                                You are now logged in as a main administrator. Visit the Players page to manage the team roster. 
-                                You'll be able to add new players, edit player information, and remove players from the roster.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
+                        <p className="text-gray-600 mb-6">Add, edit, or remove players from the team roster.</p>
+                        <PlayerManagement />
                       </div>
                     </TabsContent>
                     
                     <TabsContent value="tournaments" className="mt-6">
                       <div className="bg-white rounded-lg shadow-lg p-6">
-                        <h2 className="font-montserrat font-bold text-xl text-royal-blue mb-6">Tournament Management</h2>
-                        <p className="text-gray-600">This feature is only available to main admin users.</p>
+                        <h2 className="font-montserrat font-bold text-xl text-royal-blue mb-4">Tournament Management</h2>
+                        <p className="text-gray-600 mb-6">Create and manage tournaments, add teams, and track progress.</p>
+                        <TournamentManagement />
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="users" className="mt-6">
+                      <div className="bg-white rounded-lg shadow-lg p-6">
+                        <h2 className="font-montserrat font-bold text-xl text-royal-blue mb-4">User Management</h2>
+                        <p className="text-gray-600 mb-6">Create and manage exco member accounts.</p>
+                        <UserManagement />
                       </div>
                     </TabsContent>
                   </>

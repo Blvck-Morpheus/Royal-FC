@@ -16,14 +16,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const TeamGeneratorForm = () => {
+  // State management
   const [format, setFormat] = useState<"5-a-side" | "7-a-side" | "11-a-side">("5-a-side");
   const [selectedPlayers, setSelectedPlayers] = useState<number[]>([]);
   const [generatedTeams, setGeneratedTeams] = useState<GeneratedTeam[] | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
-  // New competition settings
+  // Competition settings
   const [balanceMethod, setBalanceMethod] = useState<"skill" | "position" | "mixed">("mixed");
   const [teamsCount, setTeamsCount] = useState<number>(2);
   const [considerHistory, setConsiderHistory] = useState<boolean>(true);
@@ -31,9 +34,19 @@ const TeamGeneratorForm = () => {
   const [activeTab, setActiveTab] = useState<string>("basic");
   const [showPlayerStatsDisplay, setShowPlayerStatsDisplay] = useState<boolean>(false);
   
+  // Get user session
+  const { data: session, isLoading: isSessionLoading } = useQuery({
+    queryKey: ['/api/admin/check-auth'],
+  });
+
+  const isAdmin = session?.role === 'admin';
+  const isExco = session?.role === 'exco';
+  const isPrivilegedUser = isAdmin || isExco;
+  
   const { toast } = useToast();
   
-  const { data: players, isLoading, error } = useQuery<Player[]>({
+  // Fetch players
+  const { data: players, isLoading: isPlayersLoading, error } = useQuery<Player[]>({
     queryKey: ['/api/players'],
   });
 
@@ -54,12 +67,17 @@ const TeamGeneratorForm = () => {
         playerIds: selectedPlayers,
         balanceMethod,
         teamsCount,
-        considerHistory,
-        competitionMode
+        considerHistory: isPrivilegedUser ? considerHistory : false,
+        competitionMode: isPrivilegedUser ? competitionMode : false
       });
       
       const teams = await res.json();
       setGeneratedTeams(teams);
+      
+      toast({
+        title: "Teams generated",
+        description: "Teams have been generated successfully",
+      });
     } catch (error) {
       toast({
         title: "Error generating teams",
@@ -76,12 +94,15 @@ const TeamGeneratorForm = () => {
   };
 
   const saveTeams = async () => {
-    if (!generatedTeams) return;
+    if (!generatedTeams || !isPrivilegedUser) return;
     
     try {
-      await apiRequest("POST", "/api/team-generator/save", {
+      setIsSaving(true);
+      const res = await apiRequest("POST", "/api/team-generator/save", {
         teams: generatedTeams,
       });
+      
+      if (!res.ok) throw new Error("Failed to save teams");
       
       toast({
         title: "Teams saved",
@@ -93,6 +114,8 @@ const TeamGeneratorForm = () => {
         description: (error as Error).message,
         variant: "destructive",
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -166,12 +189,12 @@ const TeamGeneratorForm = () => {
     };
   };
 
-  if (isLoading) {
+  if (isSessionLoading || isPlayersLoading) {
     return (
       <div className="max-w-4xl mx-auto bg-royal-light rounded-lg shadow-lg overflow-hidden">
         <div className="bg-royal-blue text-white p-4">
           <h3 className="font-montserrat font-bold text-xl">Team Generator</h3>
-          <p className="text-sm text-royal-bright-blue mt-1">Loading players...</p>
+          <p className="text-sm text-royal-bright-blue mt-1">Loading...</p>
         </div>
       </div>
     );
@@ -198,11 +221,22 @@ const TeamGeneratorForm = () => {
         <p className="text-sm text-royal-bright-blue mt-1">Create balanced teams for competition and training</p>
       </div>
       
+      {!isPrivilegedUser && (
+        <Alert className="m-4">
+          <AlertTitle>Basic Mode</AlertTitle>
+          <AlertDescription>
+            You are using the basic team generator. Log in as an admin or exco member to access advanced features.
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <div className="p-6">
         <Tabs defaultValue="basic" onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="basic">Basic Settings</TabsTrigger>
-            <TabsTrigger value="advanced">Advanced Competition</TabsTrigger>
+            {isPrivilegedUser && (
+              <TabsTrigger value="advanced">Advanced Competition</TabsTrigger>
+            )}
           </TabsList>
           
           <TabsContent value="basic">
@@ -232,90 +266,92 @@ const TeamGeneratorForm = () => {
             </div>
           </TabsContent>
           
-          <TabsContent value="advanced">
-            <div className="space-y-6">
-              <div>
-                <h4 className="text-lg font-semibold mb-3">Team Configuration</h4>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="block text-gray-700 font-medium mb-2">Number of Teams:</label>
-                    <Select 
-                      value={teamsCount.toString()} 
-                      onValueChange={(value) => setTeamsCount(parseInt(value))}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select team count" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="2">2 Teams</SelectItem>
-                        <SelectItem value="3">3 Teams</SelectItem>
-                        <SelectItem value="4">4 Teams</SelectItem>
-                      </SelectContent>
-                    </Select>
+          {isPrivilegedUser && (
+            <TabsContent value="advanced">
+              <div className="space-y-6">
+                <div>
+                  <h4 className="text-lg font-semibold mb-3">Team Configuration</h4>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2">Number of Teams:</label>
+                      <Select 
+                        value={teamsCount.toString()} 
+                        onValueChange={(value) => setTeamsCount(parseInt(value))}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select team count" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="2">2 Teams</SelectItem>
+                          <SelectItem value="3">3 Teams</SelectItem>
+                          <SelectItem value="4">4 Teams</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2">Balancing Method:</label>
+                      <Select 
+                        value={balanceMethod} 
+                        onValueChange={(value) => setBalanceMethod(value as any)}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select balancing method" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="skill">By Skill Level</SelectItem>
+                          <SelectItem value="position">By Position</SelectItem>
+                          <SelectItem value="mixed">Combined Method</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  
-                  <div>
-                    <label className="block text-gray-700 font-medium mb-2">Balancing Method:</label>
-                    <Select 
-                      value={balanceMethod} 
-                      onValueChange={(value) => setBalanceMethod(value as any)}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select balancing method" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="skill">By Skill Level</SelectItem>
-                        <SelectItem value="position">By Position</SelectItem>
-                        <SelectItem value="mixed">Combined Method</SelectItem>
-                      </SelectContent>
-                    </Select>
+                </div>
+                
+                <div>
+                  <h4 className="text-lg font-semibold mb-3">Competition Settings</h4>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="competition-mode">Competition Mode</Label>
+                        <p className="text-sm text-gray-500">Enable tracking of wins and performance</p>
+                      </div>
+                      <Switch 
+                        id="competition-mode" 
+                        checked={competitionMode}
+                        onCheckedChange={setCompetitionMode}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="consider-history">Consider Past Performance</Label>
+                        <p className="text-sm text-gray-500">Balance teams based on previous results</p>
+                      </div>
+                      <Switch 
+                        id="consider-history" 
+                        checked={considerHistory}
+                        onCheckedChange={setConsiderHistory}
+                        disabled={!competitionMode}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="show-player-stats">Show Player Statistics</Label>
+                        <p className="text-sm text-gray-500">Display player skill and win rates</p>
+                      </div>
+                      <Switch 
+                        id="show-player-stats" 
+                        checked={showPlayerStatsDisplay}
+                        onCheckedChange={setShowPlayerStatsDisplay}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
-              
-              <div>
-                <h4 className="text-lg font-semibold mb-3">Competition Settings</h4>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="competition-mode">Competition Mode</Label>
-                      <p className="text-sm text-gray-500">Enable tracking of wins and performance</p>
-                    </div>
-                    <Switch 
-                      id="competition-mode" 
-                      checked={competitionMode}
-                      onCheckedChange={setCompetitionMode}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="consider-history">Consider Past Performance</Label>
-                      <p className="text-sm text-gray-500">Balance teams based on previous results</p>
-                    </div>
-                    <Switch 
-                      id="consider-history" 
-                      checked={considerHistory}
-                      onCheckedChange={setConsiderHistory}
-                      disabled={!competitionMode}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="show-player-stats">Show Player Statistics</Label>
-                      <p className="text-sm text-gray-500">Display player skill and win rates</p>
-                    </div>
-                    <Switch 
-                      id="show-player-stats" 
-                      checked={showPlayerStatsDisplay}
-                      onCheckedChange={setShowPlayerStatsDisplay}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
+            </TabsContent>
+          )}
         </Tabs>
         
         {/* Player Selection */}
@@ -342,7 +378,7 @@ const TeamGeneratorForm = () => {
                       )}
                       <div>
                         <div>{player.name}</div>
-                        {showPlayerStatsDisplay && (
+                        {(isPrivilegedUser || showPlayerStatsDisplay) && (
                           <div className="text-xs text-gray-500 flex items-center">
                             <span className="text-amber-500 mr-2">{getSkillRating(player)}</span>
                             <span className="text-green-600">{getPlayerPerformanceStats(player).wins}W</span>
@@ -406,7 +442,7 @@ const TeamGeneratorForm = () => {
                       </div>
                     )}
                     
-                    {competitionMode && team.totalSkill && (
+                    {isPrivilegedUser && competitionMode && team.totalSkill && (
                       <div className="text-center mb-3">
                         <span className="text-sm text-gray-600">
                           Team Skill Rating: {team.totalSkill}
@@ -427,7 +463,7 @@ const TeamGeneratorForm = () => {
                             )}
                             <div>
                               <div>{player.name}</div>
-                              {showPlayerStatsDisplay && (
+                              {(isPrivilegedUser || showPlayerStatsDisplay) && (
                                 <div className="text-xs text-amber-500">
                                   {getSkillRating(player)}
                                 </div>
@@ -453,15 +489,18 @@ const TeamGeneratorForm = () => {
                 >
                   <i className="ri-refresh-line mr-1"></i> Regenerate Teams
                 </button>
-                <button 
-                  className="px-4 py-2 border border-royal-blue text-royal-blue rounded-md font-medium hover:bg-royal-blue/10 transition duration-200"
-                  onClick={saveTeams}
-                >
-                  <i className="ri-save-line mr-1"></i> Save Teams
-                </button>
+                {isPrivilegedUser && (
+                  <button 
+                    className="px-4 py-2 border border-royal-blue text-royal-blue rounded-md font-medium hover:bg-royal-blue/10 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={saveTeams}
+                    disabled={isSaving}
+                  >
+                    <i className="ri-save-line mr-1"></i> {isSaving ? "Saving..." : "Save Teams"}
+                  </button>
+                )}
               </div>
               
-              {competitionMode && (
+              {isPrivilegedUser && competitionMode && (
                 <div className="bg-royal-light p-4 rounded-lg">
                   <h4 className="font-semibold text-lg text-center mb-3">Record Match Result</h4>
                   <p className="text-center text-sm text-gray-600 mb-4">

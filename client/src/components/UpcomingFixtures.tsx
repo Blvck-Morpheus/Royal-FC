@@ -46,83 +46,70 @@ const UpcomingFixtures = () => {
     );
   }
 
-  if (!fixtures || fixtures.length === 0) {
-    return (
-      <section className="py-12 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="mb-10 text-center">
-            <h2 className="font-montserrat font-bold text-3xl text-royal-blue">Upcoming Fixtures</h2>
-            <p className="text-gray-600 mt-2">The next exciting matchdays in our club tournaments</p>
-          </div>
-          <div className="text-center py-8">
-            <p className="text-gray-600">No upcoming fixtures scheduled at the moment.</p>
-            <p className="mt-4">
-              <Link href="/tournaments">
-                <a className="inline-flex items-center text-royal-blue font-semibold hover:text-royal-gold transition duration-200">
-                  View Tournaments <i className="ri-arrow-right-line ml-1"></i>
-                </a>
-              </Link>
-            </p>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
+  // Always show the announcement instead of fixtures
   return (
     <section className="py-12 bg-white">
       <div className="container mx-auto px-4">
         <div className="mb-10 text-center">
-          <h2 className="font-montserrat font-bold text-3xl text-royal-blue">Upcoming Fixtures</h2>
-          <p className="text-gray-600 mt-2">The next exciting matchdays in our club tournaments</p>
+          <h2 className="font-montserrat font-bold text-3xl text-royal-blue">Upcoming Tournaments</h2>
+          <p className="text-gray-600 mt-2">Stay tuned for exciting competitions coming soon</p>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {fixtures.map((fixture) => (
-            <div key={fixture.id} className="bg-royal-light rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
-              <div className="bg-royal-blue p-4 text-white">
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold">{fixture.tournamentName}</span>
-                  <span className="text-sm bg-royal-gold text-royal-blue px-2 py-1 rounded">
-                    {format(new Date(fixture.date), 'MMM d, yyyy')}
-                  </span>
+
+        <div className="max-w-4xl mx-auto bg-royal-light rounded-lg shadow-lg overflow-hidden">
+          <div className="bg-royal-blue text-white p-5">
+            <h3 className="font-montserrat font-bold text-xl">Tournament Announcement</h3>
+          </div>
+
+          <div className="p-6">
+            <div className="flex flex-col md:flex-row items-center">
+              <div className="md:w-1/3 mb-6 md:mb-0 md:pr-6">
+                <div className="rounded-lg overflow-hidden">
+                  <img
+                    src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                    alt="Tournament announcement"
+                    className="w-full h-auto"
+                  />
                 </div>
               </div>
-              
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <div className="text-center flex-1">
-                    <p className="font-montserrat font-bold text-xl">{fixture.homeTeamName}</p>
-                    <p className="text-sm text-gray-600">Captain: {fixture.homeTeamCaptain}</p>
+
+              <div className="md:w-2/3">
+                <h4 className="font-montserrat font-semibold text-lg text-royal-blue mb-3">New Tournaments in the Offing</h4>
+                <p className="text-gray-600 mb-4">
+                  We're excited to announce that new tournaments are currently being planned for our club members.
+                  These competitions will provide opportunities for friendly rivalry, skill development, and community building.
+                </p>
+                <p className="text-gray-600 mb-4">
+                  Tournament details including format, teams, and schedules will be announced soon.
+                  Make sure to check back regularly for updates or join our WhatsApp group for instant notifications.
+                </p>
+
+                <div className="flex flex-wrap gap-4 mt-6">
+                  <div className="inline-flex items-center bg-royal-blue/10 px-3 py-2 rounded-md">
+                    <i className="ri-calendar-line text-royal-blue mr-2"></i>
+                    <span className="text-sm font-medium">Coming Soon</span>
                   </div>
-                  
-                  <div className="text-center px-4">
-                    <p className="font-montserrat font-bold text-lg">VS</p>
-                    <p className="text-xs text-gray-500">{format(new Date(fixture.date), 'h:mm a')}</p>
+
+                  <div className="inline-flex items-center bg-royal-blue/10 px-3 py-2 rounded-md">
+                    <i className="ri-team-line text-royal-blue mr-2"></i>
+                    <span className="text-sm font-medium">All Members Welcome</span>
                   </div>
-                  
-                  <div className="text-center flex-1">
-                    <p className="font-montserrat font-bold text-xl">{fixture.awayTeamName}</p>
-                    <p className="text-sm text-gray-600">Captain: {fixture.awayTeamCaptain}</p>
+
+                  <div className="inline-flex items-center bg-royal-blue/10 px-3 py-2 rounded-md">
+                    <i className="ri-trophy-line text-royal-blue mr-2"></i>
+                    <span className="text-sm font-medium">Multiple Formats</span>
                   </div>
-                </div>
-                
-                <div className="flex justify-center">
-                  <p className="text-sm inline-flex items-center">
-                    <i className="ri-map-pin-line mr-1"></i> {fixture.location}
-                  </p>
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-        
-        <div className="text-center mt-8">
-          <Link href="/tournaments">
-            <a className="inline-flex items-center text-royal-blue font-semibold hover:text-royal-gold transition duration-200">
-              View All Fixtures <i className="ri-arrow-right-line ml-1"></i>
-            </a>
-          </Link>
+
+            <div className="mt-8 text-center">
+              <Link href="/tournaments">
+                <a className="inline-block bg-royal-blue text-white font-bold py-3 px-6 rounded-md hover:bg-royal-bright-blue transition duration-200">
+                  View Tournament Page
+                </a>
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </section>
