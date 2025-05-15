@@ -54,11 +54,15 @@ const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
         credentials: "include",
       });
 
-      // Parse the response
+      // Get the response text first
+      const responseText = await response.text();
+      console.log("Raw response text:", responseText);
+
+      // Try to parse the response as JSON
       let userData;
       try {
-        userData = await response.json();
-        console.log("Login response:", userData);
+        userData = responseText ? JSON.parse(responseText) : {};
+        console.log("Parsed login response:", userData);
       } catch (e) {
         console.error("Error parsing response:", e);
         toast({

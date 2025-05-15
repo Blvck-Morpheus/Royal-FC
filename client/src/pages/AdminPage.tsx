@@ -25,8 +25,20 @@ const AdminPage = () => {
           credentials: "include",
         });
 
-        const userData = await response.json();
-        console.log("Auth check response:", userData);
+        // Get the response text first
+        const responseText = await response.text();
+        console.log("Raw auth check response text:", responseText);
+
+        // Try to parse the response as JSON
+        let userData;
+        try {
+          userData = responseText ? JSON.parse(responseText) : {};
+          console.log("Parsed auth check response:", userData);
+        } catch (e) {
+          console.error("Error parsing auth check response:", e);
+          setCurrentUser(null);
+          return;
+        }
 
         if (userData.authenticated || (userData.id && userData.username)) {
           setCurrentUser(userData);
@@ -56,13 +68,24 @@ const AdminPage = () => {
         credentials: "include",
       });
 
-      if (response.ok) {
-        setCurrentUser(null);
-      } else {
-        console.error("Logout failed with status:", response.status);
+      // Get the response text first
+      const responseText = await response.text();
+      console.log("Raw logout response text:", responseText);
+
+      // Always clear the user state regardless of response
+      setCurrentUser(null);
+
+      // Try to parse the response for logging purposes
+      try {
+        const responseData = responseText ? JSON.parse(responseText) : {};
+        console.log("Logout response:", responseData);
+      } catch (e) {
+        console.error("Error parsing logout response:", e);
       }
     } catch (error) {
       console.error("Logout failed:", error);
+      // Still clear the user state even if the request fails
+      setCurrentUser(null);
     }
   };
 

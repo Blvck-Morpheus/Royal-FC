@@ -558,7 +558,10 @@ router.post("/admin/login", async (req, res) => {
     };
 
     console.log("Sending response:", userResponse);
-    res.json(userResponse);
+
+    // Set explicit content type and stringify the response manually
+    res.setHeader('Content-Type', 'application/json');
+    res.send(JSON.stringify(userResponse));
   } catch (error) {
     console.error("Login error:", error);
     if (error instanceof z.ZodError) {
@@ -569,8 +572,15 @@ router.post("/admin/login", async (req, res) => {
 });
 
 router.post("/admin/logout", (req, res) => {
+  console.log("Logout request received");
   adminSession.authenticated = false;
-  res.json({ message: "Logout successful" });
+  adminSession.user = undefined;
+
+  console.log("User logged out, session cleared");
+
+  // Set explicit content type and stringify the response manually
+  res.setHeader('Content-Type', 'application/json');
+  res.send(JSON.stringify({ message: "Logout successful" }));
 });
 
 router.get("/admin/check-auth", (req, res) => {
@@ -595,10 +605,16 @@ router.get("/admin/check-auth", (req, res) => {
     };
 
     console.log("Auth check successful, returning:", userResponse);
-    res.json(userResponse);
+
+    // Set explicit content type and stringify the response manually
+    res.setHeader('Content-Type', 'application/json');
+    res.send(JSON.stringify(userResponse));
   } else {
     console.log("Auth check failed, user not authenticated");
-    res.json({ authenticated: false });
+
+    // Set explicit content type and stringify the response manually
+    res.setHeader('Content-Type', 'application/json');
+    res.send(JSON.stringify({ authenticated: false }));
   }
 });
 
