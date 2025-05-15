@@ -31,7 +31,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('/api/auth/me', {
+      const response = await fetch('/api/admin/check-auth', {
         credentials: 'include',
       });
 
@@ -50,8 +50,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return;
       }
 
-      if (response.ok && data.authenticated && data.user) {
-        setUser(data.user);
+      if (response.ok && data.authenticated) {
+        setUser(data);
       } else {
         setUser(null);
       }
@@ -72,7 +72,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(true);
       console.log('Attempting login with:', { username, loginType });
 
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch('/api/admin/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -108,11 +108,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return;
       }
 
-      setUser(data.user);
+      setUser(data);
 
       toast({
         title: 'Login successful',
-        description: `You are now logged in as ${data.user.role}`,
+        description: `You are now logged in as ${data.role}`,
       });
     } catch (error) {
       console.error('Login error:', error);
@@ -130,7 +130,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
 
-      const response = await fetch('/api/auth/logout', {
+      const response = await fetch('/api/admin/logout', {
         method: 'POST',
         credentials: 'include',
       });
