@@ -35,7 +35,7 @@ export class MemStorageImpl extends MemStorage {
     // Create the admin user with fixed ID 1
     const adminUser = {
       username: "admin",
-      password: "password123",
+      password: "password123", // Keep as plaintext for direct comparison
       role: "admin" as const,
       id: 1,
       createdAt: new Date()
@@ -43,7 +43,7 @@ export class MemStorageImpl extends MemStorage {
 
     // Set the admin user directly in the map
     this.users.set(adminUser.id, adminUser);
-    console.log("Admin user created:", { ...adminUser, password: '***' });
+    console.log("Admin user created with plaintext password");
 
     // Seed some initial data for development
     this.seedData();
