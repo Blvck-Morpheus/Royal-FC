@@ -2,17 +2,18 @@ import express from 'express';
 import cors from 'cors';
 import { config } from 'dotenv';
 import routes from './routes';
+import path from 'path';
 
 config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001; // Changed to 5001 to avoid conflicts
 
 // CORS configuration
 const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
-    ? [/\.vercel\.app$/, /localhost/] 
-    : 'http://localhost:5173',
+  origin: process.env.NODE_ENV === 'production'
+    ? [/\.vercel\.app$/, /localhost/]
+    : ['http://localhost:5173', 'http://localhost:5000', 'http://localhost:5001'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -35,14 +36,32 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   res.status(500).json({ message: 'Something went wrong!' });
 });
 
-// Handle 404
-app.use((req: express.Request, res: express.Response) => {
-  res.status(404).json({ message: 'Not Found' });
+// Handle 404 for API routes
+app.use('/api/*', (req: express.Request, res: express.Response) => {
+  res.status(404).json({ message: 'API endpoint not found' });
 });
+
+// For all other routes, serve static files in production or return a message in development
+if (process.env.NODE_ENV === 'production') {
+  // Serve static files from the dist/public directory
+  const staticPath = path.resolve(process.cwd(), 'dist/public');
+  app.use(express.static(staticPath));
+
+  // For any other routes, serve the index.html file
+  app.use('*', (req: express.Request, res: express.Response) => {
+    res.sendFile(path.resolve(staticPath, 'index.html'));
+  });
+} else {
+  // In development, return a message
+  app.use('*', (req: express.Request, res: express.Response) => {
+    res.status(200).json({ message: 'API server is running. Please use the client development server for the UI.' });
+  });
+}
 
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
-    console.log(`[express] Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+    console.log(`[express] API server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+    console.log(`[express] For the UI, please run 'npm run dev:client' in a separate terminal`);
   });
 }
 

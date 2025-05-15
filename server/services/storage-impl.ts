@@ -4,20 +4,20 @@ import { TeamGenerationRequest, GeneratedTeam } from '@shared/schema';
 // Extend the MemStorage class to add the team generator implementation
 export class MemStorageImpl extends MemStorage {
   private static instance: MemStorageImpl;
-  
+
   private tournaments: Map<number, Tournament>;
   private tournamentTeams: Map<number, TournamentTeam[]>;
   private tournamentId: number;
   private teamId: number;
-  
+
   constructor() {
     super();
-    
+
     // Singleton pattern to ensure we don't reset the storage
     if (MemStorageImpl.instance) {
       return MemStorageImpl.instance;
     }
-    
+
     // Initialize maps
     this.users = new Map();
     this.players = new Map();
@@ -25,7 +25,13 @@ export class MemStorageImpl extends MemStorage {
     this.tournamentTeams = new Map();
     this.fixtures = new Map();
     this.matchResults = new Map();
-    
+
+    // Initialize IDs
+    this.userId = 2;
+    this.tournamentId = 1;
+    this.teamId = 1;
+    this.playerId = 1;
+
     // Create the admin user with fixed ID 1
     const adminUser = {
       username: "admin",
@@ -34,22 +40,16 @@ export class MemStorageImpl extends MemStorage {
       id: 1,
       createdAt: new Date()
     };
-    
+
     // Set the admin user directly in the map
     this.users.set(adminUser.id, adminUser);
     console.log("Admin user created:", { ...adminUser, password: '***' });
 
-    // Set the userId counter to start after admin's ID
-    this.userId = 2;
-
     // Seed some initial data for development
     this.seedData();
-    
+
     // Set the instance AFTER all initialization is complete
     MemStorageImpl.instance = this;
-
-    this.tournamentId = 1;
-    this.teamId = 1;
   }
 
   // Override createUser to ensure we never overwrite admin
@@ -58,17 +58,17 @@ export class MemStorageImpl extends MemStorage {
     if (insertUser.role === "admin") {
       throw new Error("Cannot create additional admin users");
     }
-    
+
     // Get next available ID (skip 1 as it's reserved for admin)
     const id = this.userId++;
-    
-    const user: User = { 
-      ...insertUser, 
+
+    const user: User = {
+      ...insertUser,
       id,
       createdAt: new Date(),
       role: "exco" // Force role to be exco
     };
-    
+
     this.users.set(id, user);
     return user;
   }
@@ -83,7 +83,7 @@ export class MemStorageImpl extends MemStorage {
   // Generate teams
   async generateTeams(request: TeamGenerationRequest): Promise<GeneratedTeam[]> {
     const { format, playerIds, balanceMethod, teamsCount, considerHistory, competitionMode } = request;
-    
+
     // Get selected players and calculate their metrics
     const selectedPlayers = playerIds.map(id => {
       const player = this.players.get(id);
@@ -96,7 +96,7 @@ export class MemStorageImpl extends MemStorage {
 
     // Determine team size based on format
     const teamSize = format === '11-a-side' ? 11 : format === '7-a-side' ? 7 : 5;
-    
+
     // Initialize teams
     const teams: GeneratedTeam[] = Array(teamsCount).fill(null).map((_, i) => ({
       name: `Team ${i + 1}`,
@@ -110,7 +110,7 @@ export class MemStorageImpl extends MemStorage {
     // Sort players by position and skill
     const sortedPlayers = [...selectedPlayers].sort((a, b) => {
       if (balanceMethod === 'position') {
-        return a.position.localeCompare(b.position) || 
+        return a.position.localeCompare(b.position) ||
                (b.metrics?.positionStrength || 0) - (a.metrics?.positionStrength || 0);
       }
       return (b.metrics?.skillRating || 0) - (a.metrics?.skillRating || 0);
@@ -147,22 +147,22 @@ export class MemStorageImpl extends MemStorage {
 
     return teams;
   }
-  
+
   // Helper methods for team generation
   private calculatePlayerMetrics(player: Player): PlayerMetrics {
     const stats = player.stats;
     const gamesPlayed = stats.gamesPlayed || 1;
-    
+
     // Calculate win rate
     const totalGames = (stats.teamWins || 0) + (stats.teamLosses || 0) + (stats.teamDraws || 0);
     const winRate = totalGames > 0 ? ((stats.teamWins || 0) / totalGames) * 100 : 50;
-    
+
     // Calculate form rating based on recent performance
     const formRating = stats.formRating || stats.skillRating;
-    
+
     // Calculate position-specific rating
     const positionStrength = stats.positionRating || stats.skillRating;
-    
+
     return {
       winRate,
       formRating,
@@ -170,7 +170,7 @@ export class MemStorageImpl extends MemStorage {
       positionStrength
     };
   }
-  
+
   private balanceTeamsByMetric(teams: GeneratedTeam[], metric: keyof PlayerMetrics): void {
     let maxDiff = 0;
     do {
@@ -178,20 +178,20 @@ export class MemStorageImpl extends MemStorage {
         const avgMetric = team.players.reduce((sum, p) => sum + (p.metrics?.[metric] || 0), 0) / team.players.length;
         return { team, avgMetric };
       });
-      
+
       const maxTeam = teamMetrics.reduce((max, curr) => curr.avgMetric > max.avgMetric ? curr : max);
       const minTeam = teamMetrics.reduce((min, curr) => curr.avgMetric < min.avgMetric ? curr : min);
       maxDiff = maxTeam.avgMetric - minTeam.avgMetric;
-      
+
       if (maxDiff > 20) {
         // Swap players to balance teams
-        const strongPlayer = maxTeam.team.players.reduce((max, p) => 
+        const strongPlayer = maxTeam.team.players.reduce((max, p) =>
           (p.metrics?.[metric] || 0) > (max.metrics?.[metric] || 0) ? p : max
         );
-        const weakPlayer = minTeam.team.players.reduce((min, p) => 
+        const weakPlayer = minTeam.team.players.reduce((min, p) =>
           (p.metrics?.[metric] || 0) < (min.metrics?.[metric] || 0) ? p : min
         );
-        
+
         // Swap players if they play similar positions
         if (strongPlayer.position === weakPlayer.position) {
           const strongIndex = maxTeam.team.players.indexOf(strongPlayer);
@@ -202,22 +202,22 @@ export class MemStorageImpl extends MemStorage {
       }
     } while (maxDiff > 20);
   }
-  
+
   private assignCaptains(teams: GeneratedTeam[]): void {
     teams.forEach(team => {
       // Choose captain based on experience and form
       team.captain = team.players.reduce((bestCandidate, player) => {
-        const candidateScore = (player.stats.gamesPlayed * 0.4) + 
-                              ((player.metrics?.formRating || 0) * 0.3) + 
+        const candidateScore = (player.stats.gamesPlayed * 0.4) +
+                              ((player.metrics?.formRating || 0) * 0.3) +
                               (player.stats.skillRating * 0.3);
-        const bestScore = (bestCandidate.stats.gamesPlayed * 0.4) + 
-                         ((bestCandidate.metrics?.formRating || 0) * 0.3) + 
+        const bestScore = (bestCandidate.stats.gamesPlayed * 0.4) +
+                         ((bestCandidate.metrics?.formRating || 0) * 0.3) +
                          (bestCandidate.stats.skillRating * 0.3);
         return candidateScore > bestScore ? player : bestCandidate;
       }, team.players[0]);
     });
   }
-  
+
   private calculatePositionBalance(players: Player[]): number {
     const positions = players.reduce((acc, p) => {
       acc[p.position] = (acc[p.position] || 0) + 1;
@@ -240,7 +240,7 @@ export class MemStorageImpl extends MemStorage {
 
     return Math.max(0, balanceScore);
   }
-  
+
   // Seed data for development
   async seedData() {
     // Create some players
@@ -325,14 +325,14 @@ export class MemStorageImpl extends MemStorage {
         }
       }
     ];
-    
+
     // Create players and store their IDs
     const createdPlayers = [];
     for (const player of players) {
       const createdPlayer = await this.createPlayer(player as any);
       createdPlayers.push(createdPlayer);
     }
-    
+
     // Create a tournament
     const tournament = await this.createTournament({
       name: "Summer Tournament",
@@ -343,7 +343,7 @@ export class MemStorageImpl extends MemStorage {
       maxTeams: 4,
       registrationDeadline: new Date("2024-05-25").toISOString()
     });
-    
+
     // Create teams with proper player assignments
     const team1 = await this.createTournamentTeam({
       tournamentId: tournament.id,
@@ -351,14 +351,14 @@ export class MemStorageImpl extends MemStorage {
       captainId: createdPlayers[0].id, // Jamal Okoye as captain
       playerIds: [createdPlayers[0].id, createdPlayers[2].id, createdPlayers[3].id] // First 3 players
     });
-    
+
     const team2 = await this.createTournamentTeam({
       tournamentId: tournament.id,
       name: "Team Beta",
       captainId: createdPlayers[1].id, // Kwame Nduka as captain
       playerIds: [createdPlayers[1].id, createdPlayers[4].id] // Other 2 players
     });
-    
+
     // Create fixtures
     await this.createFixture({
       tournamentId: tournament.id,
@@ -375,7 +375,7 @@ export class MemStorageImpl extends MemStorage {
       status: "completed",
       tournamentName: tournament.name
     });
-    
+
     await this.createFixture({
       tournamentId: tournament.id,
       homeTeamId: team2.id,
@@ -391,7 +391,7 @@ export class MemStorageImpl extends MemStorage {
       status: "completed",
       tournamentName: tournament.name
     });
-    
+
     // Create upcoming fixture
     await this.createFixture({
       tournamentId: tournament.id,
