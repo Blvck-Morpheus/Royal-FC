@@ -8,6 +8,7 @@ import AdminLogin from "@/components/AdminLogin";
 import MatchResultForm from "@/components/MatchResultForm";
 import LiveMatchAdmin from "@/components/LiveMatchAdmin";
 import PlayerManagement from "@/components/PlayerManagement";
+import { apiRequest } from "@/lib/queryClient";
 import { User } from "@shared/schema";
 import UserManagement from "@/components/UserManagement";
 import TournamentManagement from "@/components/TournamentManagement";
@@ -20,16 +21,8 @@ const AdminPage = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch("/api/admin/check-auth", {
-          credentials: "include",
-        });
-
-        if (response.ok) {
-          const userData = await response.json();
-          setCurrentUser(userData);
-        } else {
-          setCurrentUser(null);
-        }
+        const { data: userData } = await apiRequest<User>("GET", "/api/admin/check-auth");
+        setCurrentUser(userData);
       } catch (error) {
         console.error("Auth check error:", error);
         setCurrentUser(null);
@@ -47,16 +40,8 @@ const AdminPage = () => {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch("/api/admin/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-
-      if (response.ok) {
-        setCurrentUser(null);
-      } else {
-        console.error("Logout failed with status:", response.status);
-      }
+      await apiRequest("POST", "/api/admin/logout");
+      setCurrentUser(null);
     } catch (error) {
       console.error("Logout failed:", error);
     }

@@ -6,6 +6,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { User } from "@shared/schema";
 
@@ -42,43 +43,16 @@ const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
         password: '***'
       });
 
-      // Use fetch directly instead of apiRequest
-      const response = await fetch("/api/admin/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-        credentials: "include",
-      });
+      // Use the improved apiRequest function
+      const { data: userData } = await apiRequest<User>("POST", "/api/admin/login", data);
 
-      let responseData;
-      try {
-        responseData = await response.json();
-      } catch (e) {
-        console.error("Error parsing response:", e);
-        toast({
-          title: "Login error",
-          description: "Could not parse server response",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (!response.ok) {
-        toast({
-          title: "Login failed",
-          description: responseData.message || "Invalid credentials",
-          variant: "destructive",
-        });
-        return;
-      }
+      console.log("Login response:", userData);
 
       // Check if user role matches requested login type
-      if (responseData.role !== data.loginType) {
+      if (userData.role !== data.loginType) {
         toast({
           title: "Access Denied",
-          description: `You do not have ${data.loginType} privileges. Your role is ${responseData.role}.`,
+          description: `You do not have ${data.loginType} privileges. Your role is ${userData.role}.`,
           variant: "destructive",
         });
         return;
@@ -86,10 +60,10 @@ const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
 
       toast({
         title: "Login successful",
-        description: `You are now logged in as ${responseData.role === "admin" ? "a main admin" : "an exco member"}`,
+        description: `You are now logged in as ${userData.role === "admin" ? "a main admin" : "an exco member"}`,
       });
 
-      onLoginSuccess(responseData);
+      onLoginSuccess(userData);
     } catch (error) {
       console.error("Login error:", error);
       toast({
