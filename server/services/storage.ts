@@ -1,7 +1,7 @@
-import { 
-  User, InsertUser, 
-  Player, InsertPlayer, 
-  Tournament, InsertTournament, 
+import {
+  User, InsertUser,
+  Player, InsertPlayer,
+  Tournament, InsertTournament,
   TournamentTeam, InsertTournamentTeam,
   Fixture, InsertFixture,
   MatchResult, InsertMatchResult,
@@ -59,7 +59,7 @@ export interface IStorage {
   getMatchResultsByFixture(fixtureId: number): Promise<MatchResult[]>;
   getMatchResultsByPlayer(playerId: number): Promise<MatchResult[]>;
   createMatchResult(result: InsertMatchResult): Promise<MatchResult>;
-  
+
   // Special methods for business logic
   recordMatchResult(data: MatchResultFormData): Promise<boolean>;
   generateTeams(data: TeamGenerationRequest): Promise<GeneratedTeam[]>;
@@ -75,7 +75,7 @@ export class MemStorage implements IStorage {
   private tournamentTeams: Map<number, TournamentTeam>;
   private fixtures: Map<number, Fixture>;
   private matchResults: Map<number, MatchResult>;
-  
+
   private userId: number = 1;
   private playerId: number = 1;
   private tournamentId: number = 1;
@@ -90,9 +90,9 @@ export class MemStorage implements IStorage {
     this.tournamentTeams = new Map();
     this.fixtures = new Map();
     this.matchResults = new Map();
-    
+
     // Remove admin user creation from here since it's handled in the implementation
-    
+
     // Seed some initial data for development
     this.seedData();
   }
@@ -110,11 +110,11 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.userId++;
-    const user: User = { 
-      ...insertUser, 
+    const user: User = {
+      ...insertUser,
       id,
       createdAt: new Date(),
-      role: insertUser.role || "exco" 
+      role: insertUser.role || "exco"
     };
     this.users.set(id, user);
     return user;
@@ -128,6 +128,15 @@ export class MemStorage implements IStorage {
     return this.users.delete(id);
   }
 
+  async updateUser(id: number, userData: Partial<User>): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (!user) return undefined;
+
+    const updatedUser = { ...user, ...userData };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+
   // Player methods
   async getPlayer(id: number): Promise<Player | undefined> {
     return this.players.get(id);
@@ -136,7 +145,7 @@ export class MemStorage implements IStorage {
   async getPlayers(): Promise<Player[]> {
     return Array.from(this.players.values());
   }
-  
+
   async getPlayersByIds(ids: number[]): Promise<Player[]> {
     return Array.from(this.players.values()).filter(player => ids.includes(player.id));
   }
@@ -149,8 +158,8 @@ export class MemStorage implements IStorage {
 
   async createPlayer(player: InsertPlayer): Promise<Player> {
     const id = this.playerId++;
-    const newPlayer: Player = { 
-      ...player, 
+    const newPlayer: Player = {
+      ...player,
       id,
       badges: [],
       createdAt: new Date()
@@ -175,12 +184,12 @@ export class MemStorage implements IStorage {
   async saveRoster(players: Player[]): Promise<void> {
     // Clear existing players
     this.players.clear();
-    
+
     // Add all players from the roster
     for (const player of players) {
       this.players.set(player.id, player);
     }
-    
+
     // Update the playerId counter to be greater than the highest ID
     const maxId = Math.max(...players.map(p => p.id), 0);
     this.playerId = maxId + 1;
@@ -194,7 +203,7 @@ export class MemStorage implements IStorage {
     // Add teams and fixtures to tournament
     const teams = await this.getTournamentTeamsByTournament(id);
     const tournamentFixtures = await this.getFixturesByTournament(id);
-    
+
     return {
       ...tournament,
       teams,
@@ -204,7 +213,7 @@ export class MemStorage implements IStorage {
 
   async getTournaments(): Promise<Tournament[]> {
     const tournaments = Array.from(this.tournaments.values());
-    
+
     // Add teams and fixtures to each tournament
     return Promise.all(tournaments.map(async tournament => {
       const teams = await this.getTournamentTeamsByTournament(tournament.id);
@@ -229,9 +238,9 @@ export class MemStorage implements IStorage {
 
   async createTournament(tournament: InsertTournament): Promise<Tournament> {
     const id = this.tournamentId++;
-    const newTournament: Tournament = { 
-      ...tournament, 
-      id, 
+    const newTournament: Tournament = {
+      ...tournament,
+      id,
       createdAt: new Date(),
       teams: [],
       fixtures: []
@@ -248,13 +257,13 @@ export class MemStorage implements IStorage {
     const { teams, fixtures, ...tournamentData } = tournament;
     const { teams: _, fixtures: __, ...updateData } = tournamentUpdate as any;
 
-    const updatedTournament: Tournament = { 
-      ...tournamentData, 
+    const updatedTournament: Tournament = {
+      ...tournamentData,
       ...updateData,
       teams,
       fixtures
     };
-    
+
     this.tournaments.set(id, updatedTournament);
     return updatedTournament;
   }
@@ -276,8 +285,8 @@ export class MemStorage implements IStorage {
 
   async createTournamentTeam(team: InsertTournamentTeam): Promise<TournamentTeam> {
     const id = this.teamId++;
-    const newTeam: TournamentTeam = { 
-      ...team, 
+    const newTeam: TournamentTeam = {
+      ...team,
       id,
       createdAt: new Date()
     };
@@ -312,14 +321,14 @@ export class MemStorage implements IStorage {
   async getUpcomingFixtures(): Promise<Fixture[]> {
     const now = new Date();
     return Array.from(this.fixtures.values())
-      .filter(fixture => 
-        new Date(fixture.date) > now && 
+      .filter(fixture =>
+        new Date(fixture.date) > now &&
         fixture.status === "scheduled"
       )
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .slice(0, 3); // Get next 3 fixtures
   }
-  
+
   async getActiveFixtures(): Promise<Fixture[]> {
     return Array.from(this.fixtures.values())
       .filter(fixture => fixture.status === "in_progress")
@@ -328,8 +337,8 @@ export class MemStorage implements IStorage {
 
   async createFixture(fixture: InsertFixture): Promise<Fixture> {
     const id = this.fixtureId++;
-    const newFixture: Fixture = { 
-      ...fixture, 
+    const newFixture: Fixture = {
+      ...fixture,
       id,
       createdAt: new Date()
     };
@@ -365,33 +374,33 @@ export class MemStorage implements IStorage {
 
   async createMatchResult(result: InsertMatchResult): Promise<MatchResult> {
     const id = this.matchResultId++;
-    const newResult: MatchResult = { 
-      ...result, 
+    const newResult: MatchResult = {
+      ...result,
       id,
       createdAt: new Date()
     };
     this.matchResults.set(id, newResult);
     return newResult;
   }
-  
+
   // Special methods for business logic
   async recordMatchResult(data: MatchResultFormData): Promise<boolean> {
     try {
       const fixtureId = parseInt(data.fixtureId);
       const fixture = await this.getFixture(fixtureId);
       if (!fixture) return false;
-      
+
       // Update fixture with scores
       await this.updateFixture(fixtureId, {
         homeTeamScore: data.homeTeamScore,
         awayTeamScore: data.awayTeamScore,
         status: "completed"
       });
-      
+
       // Find the teams
       const homeTeam = await this.getTournamentTeam(fixture.homeTeamId);
       const awayTeam = await this.getTournamentTeam(fixture.awayTeamId);
-      
+
       if (homeTeam && awayTeam) {
         // Update team stats
         const homeUpdate: Partial<TournamentTeam> = {
@@ -399,13 +408,13 @@ export class MemStorage implements IStorage {
           goalsFor: homeTeam.goalsFor + data.homeTeamScore,
           goalsAgainst: homeTeam.goalsAgainst + data.awayTeamScore
         };
-        
+
         const awayUpdate: Partial<TournamentTeam> = {
           played: awayTeam.played + 1,
           goalsFor: awayTeam.goalsFor + data.awayTeamScore,
           goalsAgainst: awayTeam.goalsAgainst + data.homeTeamScore
         };
-        
+
         if (data.homeTeamScore > data.awayTeamScore) {
           // Home team wins
           homeUpdate.won = homeTeam.won + 1;
@@ -423,27 +432,27 @@ export class MemStorage implements IStorage {
           awayUpdate.drawn = awayTeam.drawn + 1;
           awayUpdate.points = awayTeam.points + 1;
         }
-        
+
         await this.updateTournamentTeam(homeTeam.id, homeUpdate);
         await this.updateTournamentTeam(awayTeam.id, awayUpdate);
       }
-      
+
       // Record player stats
       if (data.scorers && data.scorers.length > 0) {
         for (const scorer of data.scorers) {
           if (!scorer.playerId) continue;
-          
+
           const playerId = parseInt(scorer.playerId);
           const player = await this.getPlayer(playerId);
           if (!player) continue;
-          
+
           // Update player stats
           const stats = { ...player.stats };
           stats.goals = (stats.goals || 0) + scorer.goals;
           stats.gamesPlayed = (stats.gamesPlayed || 0) + 1;
-          
+
           await this.updatePlayer(playerId, { stats });
-          
+
           // Record match result
           await this.createMatchResult({
             fixtureId,
@@ -456,34 +465,34 @@ export class MemStorage implements IStorage {
           });
         }
       }
-      
+
       return true;
     } catch (error) {
       console.error("Error recording match result:", error);
       return false;
     }
   }
-  
+
   // Implementation of other methods will be added in the next file due to size limitations
-  
+
   // Seed data for development
   private async seedData() {
     // This will be implemented in a separate file
   }
-  
+
   // Get leaderboard
   async getLeaderboard(category: string = "goals"): Promise<Player[]> {
     const players = await this.getPlayers();
-    
+
     // Sort players based on the requested category
     return players.sort((a, b) => {
       const aStats = a.stats as any || {};
       const bStats = b.stats as any || {};
-      
+
       // Get values for the requested category
       let aValue = 0;
       let bValue = 0;
-      
+
       switch (category) {
         case "goals":
           aValue = aStats.goals || 0;
@@ -506,12 +515,12 @@ export class MemStorage implements IStorage {
           bValue = bStats.saves || 0;
           break;
       }
-      
+
       // Sort by category value (descending)
       return bValue - aValue;
     });
   }
-  
+
   // Save contact form
   async saveContactForm(data: ContactFormData): Promise<boolean> {
     // In a real app, we would save this to a database

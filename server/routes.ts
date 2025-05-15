@@ -2,10 +2,13 @@ import express from 'express';
 import { storage } from "./services/storage-impl";
 import { z } from "zod";
 import { MatchResultFormData, TeamGenerationRequest, ContactFormData } from "@shared/schema";
-import { adminSession } from './middleware/auth';
-import { requireAdmin } from './middleware';
+import { authenticate, requireAdmin, requireExco } from './middleware/authMiddleware';
+import authRoutes from './routes/authRoutes';
 
 const router = express.Router();
+
+// Use auth routes
+router.use('/auth', authRoutes);
 
 // Players API
 router.get("/players", async (req, res) => {

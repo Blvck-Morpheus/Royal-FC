@@ -1,101 +1,28 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Helmet } from "react-helmet";
-import { useQuery } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import AdminLogin from "@/components/AdminLogin";
-import DirectAdminLogin from "@/components/DirectAdminLogin";
+import AdminLoginForm from "@/components/AdminLoginForm";
 import MatchResultForm from "@/components/MatchResultForm";
 import LiveMatchAdmin from "@/components/LiveMatchAdmin";
 import PlayerManagement from "@/components/PlayerManagement";
-import { apiRequest } from "@/lib/queryClient";
 import { User } from "@shared/schema";
 import UserManagement from "@/components/UserManagement";
 import TournamentManagement from "@/components/TournamentManagement";
+import { useAuth } from "@/contexts/AuthContext";
 
 const AdminPage = () => {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Check if admin is already logged in
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/admin/check-auth", {
-          credentials: "include",
-        });
-
-        // Get the response text first
-        const responseText = await response.text();
-        console.log("Raw auth check response text:", responseText);
-
-        // Try to parse the response as JSON
-        let userData;
-        try {
-          userData = responseText ? JSON.parse(responseText) : {};
-          console.log("Parsed auth check response:", userData);
-        } catch (e) {
-          console.error("Error parsing auth check response:", e);
-          setCurrentUser(null);
-          return;
-        }
-
-        if (userData.authenticated || (userData.id && userData.username)) {
-          setCurrentUser(userData);
-        } else {
-          setCurrentUser(null);
-        }
-      } catch (error) {
-        console.error("Auth check error:", error);
-        setCurrentUser(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, []);
-
-  const handleLoginSuccess = (user: User) => {
-    console.log("Login success, setting user:", user);
-    setCurrentUser(user);
-  };
-
-  const handleLogout = async () => {
-    try {
-      const response = await fetch("/api/admin/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-
-      // Get the response text first
-      const responseText = await response.text();
-      console.log("Raw logout response text:", responseText);
-
-      // Always clear the user state regardless of response
-      setCurrentUser(null);
-
-      // Try to parse the response for logging purposes
-      try {
-        const responseData = responseText ? JSON.parse(responseText) : {};
-        console.log("Logout response:", responseData);
-      } catch (e) {
-        console.error("Error parsing logout response:", e);
-      }
-    } catch (error) {
-      console.error("Logout failed:", error);
-      // Still clear the user state even if the request fails
-      setCurrentUser(null);
-    }
-  };
+  const { user, isLoading, logout } = useAuth();
+  const [activeTab, setActiveTab] = useState<string>("match-results");
 
   if (isLoading) {
     return (
       <section className="py-12 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center py-10">
-            <p className="text-gray-600">Loading...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-royal-blue mx-auto"></div>
+            <p className="text-gray-600 mt-4">Loading...</p>
           </div>
         </div>
       </section>
@@ -116,37 +43,37 @@ const AdminPage = () => {
             <p className="text-gray-600 mt-2">Manage match results, player stats, and tournaments</p>
           </div>
 
-          {currentUser ? (
+          {user ? (
             <div className="max-w-5xl mx-auto">
               <div className="flex justify-between mb-6 items-center">
                 <div className="flex items-center">
                   <span className="text-gray-700 mr-2">Logged in as:</span>
-                  <span className="font-semibold">{currentUser.username}</span>
-                  <Badge className={currentUser.role === "admin" ? "bg-royal-blue ml-2" : "bg-royal-bright-blue ml-2"}>
-                    {currentUser.role === "admin" ? "Main Admin" : "Exco Member"}
+                  <span className="font-semibold">{user.username}</span>
+                  <Badge className={user.role === "admin" ? "bg-royal-blue ml-2" : "bg-royal-bright-blue ml-2"}>
+                    {user.role === "admin" ? "Main Admin" : "Exco Member"}
                   </Badge>
                 </div>
                 <Button
                   variant="outline"
                   className="bg-white"
-                  onClick={handleLogout}
+                  onClick={logout}
                 >
                   <i className="ri-logout-box-r-line mr-1"></i> Logout
                 </Button>
               </div>
 
-              <Tabs defaultValue="match-results">
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="match-results">Match Results</TabsTrigger>
                   <TabsTrigger value="live-updates">Live Updates</TabsTrigger>
-                  {currentUser.role === "admin" && (
+                  {user.role === "admin" && (
                     <>
                       <TabsTrigger value="players">Players</TabsTrigger>
                       <TabsTrigger value="tournaments">Tournaments</TabsTrigger>
                       <TabsTrigger value="users">User Management</TabsTrigger>
                     </>
                   )}
-                  {currentUser.role === "exco" && (
+                  {user.role === "exco" && (
                     <>
                       <TabsTrigger value="team-generator">Team Generator</TabsTrigger>
                       <TabsTrigger value="contact-messages">Contact Messages</TabsTrigger>
@@ -162,7 +89,7 @@ const AdminPage = () => {
                   <LiveMatchAdmin />
                 </TabsContent>
 
-                {currentUser.role === "admin" && (
+                {user.role === "admin" && (
                   <>
                     <TabsContent value="players" className="mt-6">
                       <div className="bg-white rounded-lg shadow-lg p-6">
@@ -190,7 +117,7 @@ const AdminPage = () => {
                   </>
                 )}
 
-                {currentUser.role === "exco" && (
+                {user.role === "exco" && (
                   <>
                     <TabsContent value="team-generator" className="mt-6">
                       <div className="bg-white rounded-lg shadow-lg p-6">
@@ -210,19 +137,8 @@ const AdminPage = () => {
               </Tabs>
             </div>
           ) : (
-            <div className="max-w-md mx-auto space-y-8">
-              <AdminLogin onLoginSuccess={handleLoginSuccess} />
-
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-gray-50 text-gray-500">Or</span>
-                </div>
-              </div>
-
-              <DirectAdminLogin onLoginSuccess={handleLoginSuccess} />
+            <div className="max-w-md mx-auto">
+              <AdminLoginForm />
             </div>
           )}
         </div>

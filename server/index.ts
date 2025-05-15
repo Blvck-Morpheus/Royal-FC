@@ -1,8 +1,10 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import { config } from 'dotenv';
 import routes from './routes';
 import path from 'path';
+import { authService } from './services/authService';
 
 config();
 
@@ -21,6 +23,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(cookieParser());
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -59,9 +62,15 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, () => {
-    console.log(`[express] API server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-    console.log(`[express] For the UI, please run 'npm run dev:client' in a separate terminal`);
+  // Ensure admin user exists before starting the server
+  authService.ensureAdminExists().then(() => {
+    app.listen(PORT, () => {
+      console.log(`[express] API server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+      console.log(`[express] For the UI, please run 'npm run dev:client' in a separate terminal`);
+    });
+  }).catch(err => {
+    console.error('Failed to ensure admin user exists:', err);
+    process.exit(1);
   });
 }
 
