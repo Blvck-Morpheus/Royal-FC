@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import AdminLogin from "@/components/AdminLogin";
+import DirectAdminLogin from "@/components/DirectAdminLogin";
 import MatchResultForm from "@/components/MatchResultForm";
 import LiveMatchAdmin from "@/components/LiveMatchAdmin";
 import PlayerManagement from "@/components/PlayerManagement";
@@ -209,8 +210,19 @@ const AdminPage = () => {
               </Tabs>
             </div>
           ) : (
-            <div className="max-w-md mx-auto">
+            <div className="max-w-md mx-auto space-y-8">
               <AdminLogin onLoginSuccess={handleLoginSuccess} />
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-gray-300" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-gray-50 text-gray-500">Or</span>
+                </div>
+              </div>
+
+              <DirectAdminLogin onLoginSuccess={handleLoginSuccess} />
             </div>
           )}
         </div>
