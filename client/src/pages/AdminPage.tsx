@@ -21,8 +21,18 @@ const AdminPage = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data: userData } = await apiRequest<User>("GET", "/api/admin/check-auth");
-        setCurrentUser(userData);
+        const response = await fetch("/api/admin/check-auth", {
+          credentials: "include",
+        });
+
+        const userData = await response.json();
+        console.log("Auth check response:", userData);
+
+        if (userData.authenticated || (userData.id && userData.username)) {
+          setCurrentUser(userData);
+        } else {
+          setCurrentUser(null);
+        }
       } catch (error) {
         console.error("Auth check error:", error);
         setCurrentUser(null);
@@ -35,13 +45,22 @@ const AdminPage = () => {
   }, []);
 
   const handleLoginSuccess = (user: User) => {
+    console.log("Login success, setting user:", user);
     setCurrentUser(user);
   };
 
   const handleLogout = async () => {
     try {
-      await apiRequest("POST", "/api/admin/logout");
-      setCurrentUser(null);
+      const response = await fetch("/api/admin/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        setCurrentUser(null);
+      } else {
+        console.error("Logout failed with status:", response.status);
+      }
     } catch (error) {
       console.error("Logout failed:", error);
     }

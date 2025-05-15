@@ -31,6 +31,7 @@ const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
     defaultValues: {
       username: "",
       password: "",
+      loginType: "admin", // Default to admin login
     },
   });
 
@@ -43,10 +44,40 @@ const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
         password: '***'
       });
 
-      // Use the improved apiRequest function
-      const { data: userData } = await apiRequest<User>("POST", "/api/admin/login", data);
+      // Use direct fetch for maximum compatibility
+      const response = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+        credentials: "include",
+      });
 
-      console.log("Login response:", userData);
+      // Parse the response
+      let userData;
+      try {
+        userData = await response.json();
+        console.log("Login response:", userData);
+      } catch (e) {
+        console.error("Error parsing response:", e);
+        toast({
+          title: "Login error",
+          description: "Could not parse server response",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Check if the response was successful
+      if (!response.ok) {
+        toast({
+          title: "Login failed",
+          description: userData.message || "Invalid credentials",
+          variant: "destructive",
+        });
+        return;
+      }
 
       // Check if user role matches requested login type
       if (userData.role !== data.loginType) {

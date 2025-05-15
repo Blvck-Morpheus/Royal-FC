@@ -103,10 +103,10 @@ router.post("/players/save-roster", async (req, res) => {
     }
 
     const { players } = req.body;
-    
+
     // Save the roster
     await storage.saveRoster(players);
-    
+
     res.json({ message: "Roster saved successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error saving roster" });
@@ -495,18 +495,41 @@ router.post("/contact", async (req, res) => {
 router.post("/admin/login", async (req, res) => {
   try {
     console.log("Login attempt:", { ...req.body, password: '***' });
-    
+    console.log("Request headers:", req.headers);
+
+    // Log the raw request body
+    console.log("Raw request body:", req.body);
+
     const schema = z.object({
       username: z.string().min(1),
       password: z.string().min(1),
-      loginType: z.enum(["admin", "exco"]),
+      loginType: z.enum(["admin", "exco"]).optional(), // Make loginType optional for compatibility
     });
 
-    const validatedData = schema.parse(req.body);
+    // Try to validate the data
+    let validatedData;
+    try {
+      validatedData = schema.parse(req.body);
+      console.log("Validated data:", { ...validatedData, password: '***' });
+    } catch (validationError) {
+      console.error("Validation error:", validationError);
+      return res.status(400).json({
+        message: "Invalid input data",
+        details: validationError instanceof z.ZodError ? validationError.errors : "Unknown validation error"
+      });
+    }
+
+    // For backward compatibility, default to admin if loginType is not provided
+    if (!validatedData.loginType) {
+      validatedData.loginType = "admin";
+      console.log("LoginType not provided, defaulting to admin");
+    }
+
+    // Get user by username
     const user = await storage.getUserByUsername(validatedData.username);
-    
     console.log("Found user:", user ? { ...user, password: '***' } : null);
 
+    // Check credentials
     if (!user || user.password !== validatedData.password) {
       console.log("Invalid credentials");
       return res.status(401).json({ message: "Invalid credentials" });
@@ -515,17 +538,27 @@ router.post("/admin/login", async (req, res) => {
     // Check if user role matches requested login type
     if (user.role !== validatedData.loginType) {
       console.log(`Role mismatch: user role ${user.role}, requested ${validatedData.loginType}`);
-      return res.status(403).json({ 
-        message: `You do not have ${validatedData.loginType} privileges. Your role is ${user.role}.` 
+      return res.status(403).json({
+        message: `You do not have ${validatedData.loginType} privileges. Your role is ${user.role}.`
       });
     }
 
     // Set admin session
     adminSession.authenticated = true;
     adminSession.user = user;
-    
+
     console.log("Login successful:", { userId: user.id, role: user.role });
-    res.json(user);
+
+    // Return a simplified user object to avoid any potential issues
+    const userResponse = {
+      id: user.id,
+      username: user.username,
+      role: user.role,
+      createdAt: user.createdAt
+    };
+
+    console.log("Sending response:", userResponse);
+    res.json(userResponse);
   } catch (error) {
     console.error("Login error:", error);
     if (error instanceof z.ZodError) {
@@ -541,10 +574,31 @@ router.post("/admin/logout", (req, res) => {
 });
 
 router.get("/admin/check-auth", (req, res) => {
+  console.log("Check auth request received");
+  console.log("Admin session:", {
+    authenticated: adminSession.authenticated,
+    user: adminSession.user ? {
+      id: adminSession.user.id,
+      username: adminSession.user.username,
+      role: adminSession.user.role
+    } : null
+  });
+
   if (adminSession.authenticated && adminSession.user) {
-    res.json(adminSession.user);
+    // Return a simplified user object to avoid any potential issues
+    const userResponse = {
+      id: adminSession.user.id,
+      username: adminSession.user.username,
+      role: adminSession.user.role,
+      createdAt: adminSession.user.createdAt,
+      authenticated: true
+    };
+
+    console.log("Auth check successful, returning:", userResponse);
+    res.json(userResponse);
   } else {
-    res.status(401).json({ authenticated: false });
+    console.log("Auth check failed, user not authenticated");
+    res.json({ authenticated: false });
   }
 });
 
@@ -571,7 +625,7 @@ router.post("/users", async (req, res) => {
     }
 
     const userData = req.body;
-    
+
     // Validate that we're only creating exco members
     if (userData.role !== "exco") {
       return res.status(400).json({ message: "Can only create exco member accounts" });
@@ -650,8 +704,8 @@ router.post('/tournament-teams', requireAdmin, async (req, res) => {
     const team = await storage.createTournamentTeam(req.body);
     res.json(team);
   } catch (error) {
-    res.status(500).json({ 
-      message: error instanceof Error ? error.message : 'Failed to create team' 
+    res.status(500).json({
+      message: error instanceof Error ? error.message : 'Failed to create team'
     });
   }
 });
