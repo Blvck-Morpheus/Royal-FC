@@ -25,7 +25,7 @@ interface AdminLoginProps {
 const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const { toast } = useToast();
-  
+
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -37,42 +37,62 @@ const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
   const onSubmit = async (data: LoginFormValues) => {
     try {
       setIsLoggingIn(true);
-      
+
       console.log("Attempting login with:", {
         ...data,
         password: '***'
       });
-      
+
       const response = await apiRequest("POST", "/api/admin/login", data);
-      
+
+      // Clone the response before reading it
+      const responseClone = response.clone();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        toast({
-          title: "Login failed",
-          description: errorData.message || "Invalid credentials",
-          variant: "destructive",
-        });
+        try {
+          const errorData = await response.json();
+          toast({
+            title: "Login failed",
+            description: errorData.message || "Invalid credentials",
+            variant: "destructive",
+          });
+        } catch (e) {
+          toast({
+            title: "Login failed",
+            description: "An error occurred during login",
+            variant: "destructive",
+          });
+        }
         return;
       }
-      
-      const userData = await response.json();
-      console.log("Login response:", userData);
-      
-      if (userData.role !== data.loginType) {
+
+      try {
+        const userData = await responseClone.json();
+        console.log("Login response:", userData);
+
+        if (userData.role !== data.loginType) {
+          toast({
+            title: "Access Denied",
+            description: `You do not have ${data.loginType} privileges. Your role is ${userData.role}.`,
+            variant: "destructive",
+          });
+          return;
+        }
+
         toast({
-          title: "Access Denied",
-          description: `You do not have ${data.loginType} privileges. Your role is ${userData.role}.`,
+          title: "Login successful",
+          description: `You are now logged in as ${userData.role === "admin" ? "a main admin" : "an exco member"}`,
+        });
+
+        onLoginSuccess(userData);
+      } catch (e) {
+        console.error("Error parsing login response:", e);
+        toast({
+          title: "Login error",
+          description: "Error processing login response",
           variant: "destructive",
         });
-        return;
       }
-      
-      toast({
-        title: "Login successful",
-        description: `You are now logged in as ${userData.role === "admin" ? "a main admin" : "an exco member"}`,
-      });
-      
-      onLoginSuccess(userData);
     } catch (error) {
       console.error("Login error:", error);
       toast({
@@ -91,7 +111,7 @@ const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
         <h3 className="font-montserrat font-bold text-xl text-royal-blue mb-2">Admin Access</h3>
         <p className="text-sm text-gray-600">Enter your credentials to access the admin area</p>
       </div>
-      
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
@@ -128,7 +148,7 @@ const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="username"
@@ -142,7 +162,7 @@ const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="password"
@@ -156,9 +176,9 @@ const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
               </FormItem>
             )}
           />
-          
-          <Button 
-            type="submit" 
+
+          <Button
+            type="submit"
             className="w-full bg-royal-blue hover:bg-royal-blue/90"
             disabled={isLoggingIn}
           >
