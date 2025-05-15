@@ -19,7 +19,7 @@ router.post('/register', authenticate, requireAdmin, async (req, res) => {
     });
 
     const validatedData = schema.parse(req.body);
-    
+
     // Only allow creating exco members through this interface
     if (validatedData.role === 'admin') {
       return res.status(400).json({ message: 'Cannot create additional admin users' });
@@ -42,11 +42,11 @@ router.post('/register', authenticate, requireAdmin, async (req, res) => {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ message: 'Invalid input data', errors: error.errors });
     }
-    
+
     if (error instanceof Error) {
       return res.status(400).json({ message: error.message });
     }
-    
+
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -88,19 +88,21 @@ router.post('/login', async (req, res) => {
       maxAge: 24 * 60 * 60 * 1000 // 24 hours
     });
 
-    res.json({
+    // Explicitly set content type and stringify the response
+    res.setHeader('Content-Type', 'application/json');
+    res.send(JSON.stringify({
       message: 'Login successful',
       user: userWithoutPassword
-    });
+    }));
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ message: 'Invalid input data', errors: error.errors });
     }
-    
+
     if (error instanceof Error) {
       return res.status(401).json({ message: error.message });
     }
-    
+
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -112,7 +114,10 @@ router.post('/login', async (req, res) => {
  */
 router.post('/logout', (req, res) => {
   res.clearCookie('token');
-  res.json({ message: 'Logout successful' });
+
+  // Explicitly set content type and stringify the response
+  res.setHeader('Content-Type', 'application/json');
+  res.send(JSON.stringify({ message: 'Logout successful' }));
 });
 
 /**
@@ -121,10 +126,12 @@ router.post('/logout', (req, res) => {
  * @access  Private
  */
 router.get('/me', authenticate, (req, res) => {
-  res.json({
+  // Explicitly set content type and stringify the response
+  res.setHeader('Content-Type', 'application/json');
+  res.send(JSON.stringify({
     user: req.user,
     authenticated: true
-  });
+  }));
 });
 
 export default router;

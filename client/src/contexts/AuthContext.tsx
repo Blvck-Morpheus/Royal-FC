@@ -35,13 +35,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         credentials: 'include',
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.authenticated && data.user) {
-          setUser(data.user);
-        } else {
-          setUser(null);
-        }
+      // Get the response text first
+      const responseText = await response.text();
+      console.log('Auth check response text:', responseText);
+
+      // Try to parse the response as JSON
+      let data;
+      try {
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch (e) {
+        console.error('Error parsing auth check response:', e);
+        setUser(null);
+        setIsLoading(false);
+        return;
+      }
+
+      if (response.ok && data.authenticated && data.user) {
+        setUser(data.user);
       } else {
         setUser(null);
       }
@@ -60,6 +70,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (username: string, password: string, loginType?: 'admin' | 'exco') => {
     try {
       setIsLoading(true);
+      console.log('Attempting login with:', { username, loginType });
 
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -70,7 +81,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         credentials: 'include',
       });
 
-      const data = await response.json();
+      // Get the response text first
+      const responseText = await response.text();
+      console.log('Login response text:', responseText);
+
+      // Try to parse the response as JSON
+      let data;
+      try {
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch (e) {
+        console.error('Error parsing login response:', e);
+        toast({
+          title: 'Login error',
+          description: 'Could not parse server response',
+          variant: 'destructive',
+        });
+        return;
+      }
 
       if (!response.ok) {
         toast({
@@ -82,7 +109,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       setUser(data.user);
-      
+
       toast({
         title: 'Login successful',
         description: `You are now logged in as ${data.user.role}`,
@@ -102,24 +129,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async () => {
     try {
       setIsLoading(true);
-      
-      await fetch('/api/auth/logout', {
+
+      const response = await fetch('/api/auth/logout', {
         method: 'POST',
         credentials: 'include',
       });
-      
+
+      // Get the response text first
+      const responseText = await response.text();
+      console.log('Logout response text:', responseText);
+
+      // Always clear the user state
       setUser(null);
-      
+
       toast({
         title: 'Logout successful',
         description: 'You have been logged out',
       });
     } catch (error) {
       console.error('Logout error:', error);
+      // Still clear the user state even if the request fails
+      setUser(null);
+
       toast({
-        title: 'Logout failed',
-        description: 'An error occurred during logout',
-        variant: 'destructive',
+        title: 'Logout status',
+        description: 'You have been logged out locally',
       });
     } finally {
       setIsLoading(false);
