@@ -44,13 +44,25 @@ const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
         password: '***'
       });
 
+      // Log the exact data being sent
+      const loginData = {
+        username: data.username,
+        password: data.password,
+        loginType: data.loginType || "admin" // Ensure loginType is set
+      };
+
+      console.log("Sending login data:", {
+        ...loginData,
+        password: "***"
+      });
+
       // Use direct fetch for maximum compatibility
       const response = await fetch("/api/admin/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(loginData),
         credentials: "include",
       });
 

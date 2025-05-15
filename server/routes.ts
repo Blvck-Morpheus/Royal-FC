@@ -500,6 +500,20 @@ router.post("/admin/login", async (req, res) => {
     // Log the raw request body
     console.log("Raw request body:", req.body);
 
+    // Ensure admin user exists
+    const adminUser = await storage.getUserByUsername("admin");
+    if (!adminUser) {
+      console.log("Admin user not found, creating default admin user");
+      await storage.createUser({
+        username: "admin",
+        password: "password123",
+        role: "admin"
+      });
+      console.log("Default admin user created");
+    } else {
+      console.log("Admin user exists:", { id: adminUser.id, username: adminUser.username, role: adminUser.role });
+    }
+
     const schema = z.object({
       username: z.string().min(1),
       password: z.string().min(1),
@@ -583,8 +597,23 @@ router.post("/admin/logout", (req, res) => {
   res.send(JSON.stringify({ message: "Logout successful" }));
 });
 
-router.get("/admin/check-auth", (req, res) => {
+router.get("/admin/check-auth", async (req, res) => {
   console.log("Check auth request received");
+
+  // Ensure admin user exists
+  const adminUser = await storage.getUserByUsername("admin");
+  if (!adminUser) {
+    console.log("Admin user not found in check-auth, creating default admin user");
+    await storage.createUser({
+      username: "admin",
+      password: "password123",
+      role: "admin"
+    });
+    console.log("Default admin user created in check-auth");
+  } else {
+    console.log("Admin user exists in check-auth:", { id: adminUser.id, username: adminUser.username, role: adminUser.role });
+  }
+
   console.log("Admin session:", {
     authenticated: adminSession.authenticated,
     user: adminSession.user ? {
