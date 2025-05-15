@@ -1,6 +1,9 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
-const API_BASE_URL = 'http://localhost:5000';
+// In production, use the current domain, otherwise use localhost
+const API_BASE_URL = process.env.NODE_ENV === 'production'
+  ? '' // Empty string means use the current domain
+  : 'http://localhost:5001';
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -21,7 +24,7 @@ export async function apiRequest(
   data?: unknown | undefined,
 ): Promise<Response> {
   const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
-  
+
   try {
     const res = await fetch(fullUrl, {
       method,
@@ -38,7 +41,8 @@ export async function apiRequest(
     return res;
   } catch (error) {
     if (error instanceof TypeError && error.message === 'Failed to fetch') {
-      throw new Error(`Unable to connect to server at ${API_BASE_URL}. Please ensure the server is running.`);
+      const baseUrl = API_BASE_URL || window.location.origin;
+      throw new Error(`Unable to connect to server at ${baseUrl}. Please try again later.`);
     }
     throw error;
   }
@@ -52,7 +56,7 @@ export const getQueryFn: <T>(options: {
   async ({ queryKey }) => {
     const url = queryKey[0] as string;
     const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
-    
+
     try {
       const res = await fetch(fullUrl, {
         headers: {
@@ -70,7 +74,8 @@ export const getQueryFn: <T>(options: {
       return await res.json();
     } catch (error) {
       if (error instanceof TypeError && error.message === 'Failed to fetch') {
-        throw new Error(`Unable to connect to server at ${API_BASE_URL}. Please ensure the server is running.`);
+        const baseUrl = API_BASE_URL || window.location.origin;
+        throw new Error(`Unable to connect to server at ${baseUrl}. Please try again later.`);
       }
       throw error;
     }
