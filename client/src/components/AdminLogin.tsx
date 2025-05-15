@@ -6,7 +6,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { User } from "@shared/schema";
 
@@ -43,56 +42,54 @@ const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
         password: '***'
       });
 
-      const response = await apiRequest("POST", "/api/admin/login", data);
+      // Use fetch directly instead of apiRequest
+      const response = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+        credentials: "include",
+      });
 
-      // Clone the response before reading it
-      const responseClone = response.clone();
-
-      if (!response.ok) {
-        try {
-          const errorData = await response.json();
-          toast({
-            title: "Login failed",
-            description: errorData.message || "Invalid credentials",
-            variant: "destructive",
-          });
-        } catch (e) {
-          toast({
-            title: "Login failed",
-            description: "An error occurred during login",
-            variant: "destructive",
-          });
-        }
+      let responseData;
+      try {
+        responseData = await response.json();
+      } catch (e) {
+        console.error("Error parsing response:", e);
+        toast({
+          title: "Login error",
+          description: "Could not parse server response",
+          variant: "destructive",
+        });
         return;
       }
 
-      try {
-        const userData = await responseClone.json();
-        console.log("Login response:", userData);
-
-        if (userData.role !== data.loginType) {
-          toast({
-            title: "Access Denied",
-            description: `You do not have ${data.loginType} privileges. Your role is ${userData.role}.`,
-            variant: "destructive",
-          });
-          return;
-        }
-
+      if (!response.ok) {
         toast({
-          title: "Login successful",
-          description: `You are now logged in as ${userData.role === "admin" ? "a main admin" : "an exco member"}`,
-        });
-
-        onLoginSuccess(userData);
-      } catch (e) {
-        console.error("Error parsing login response:", e);
-        toast({
-          title: "Login error",
-          description: "Error processing login response",
+          title: "Login failed",
+          description: responseData.message || "Invalid credentials",
           variant: "destructive",
         });
+        return;
       }
+
+      // Check if user role matches requested login type
+      if (responseData.role !== data.loginType) {
+        toast({
+          title: "Access Denied",
+          description: `You do not have ${data.loginType} privileges. Your role is ${responseData.role}.`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Login successful",
+        description: `You are now logged in as ${responseData.role === "admin" ? "a main admin" : "an exco member"}`,
+      });
+
+      onLoginSuccess(responseData);
     } catch (error) {
       console.error("Login error:", error);
       toast({

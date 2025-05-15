@@ -8,7 +8,6 @@ import AdminLogin from "@/components/AdminLogin";
 import MatchResultForm from "@/components/MatchResultForm";
 import LiveMatchAdmin from "@/components/LiveMatchAdmin";
 import PlayerManagement from "@/components/PlayerManagement";
-import { apiRequest } from "@/lib/queryClient";
 import { User } from "@shared/schema";
 import UserManagement from "@/components/UserManagement";
 import TournamentManagement from "@/components/TournamentManagement";
@@ -21,7 +20,10 @@ const AdminPage = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await apiRequest("GET", "/api/admin/check-auth");
+        const response = await fetch("/api/admin/check-auth", {
+          credentials: "include",
+        });
+
         if (response.ok) {
           const userData = await response.json();
           setCurrentUser(userData);
@@ -29,6 +31,7 @@ const AdminPage = () => {
           setCurrentUser(null);
         }
       } catch (error) {
+        console.error("Auth check error:", error);
         setCurrentUser(null);
       } finally {
         setIsLoading(false);
@@ -44,8 +47,16 @@ const AdminPage = () => {
 
   const handleLogout = async () => {
     try {
-      await apiRequest("POST", "/api/admin/logout");
-      setCurrentUser(null);
+      const response = await fetch("/api/admin/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        setCurrentUser(null);
+      } else {
+        console.error("Logout failed with status:", response.status);
+      }
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -69,14 +80,14 @@ const AdminPage = () => {
         <title>Admin | Royal FC Asaba</title>
         <meta name="description" content="Admin panel for Royal FC Asaba. Manage match results, player stats, and tournaments." />
       </Helmet>
-      
+
       <section className="py-12 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="mb-10 text-center">
             <h1 className="font-montserrat font-bold text-3xl text-royal-blue">Admin Panel</h1>
             <p className="text-gray-600 mt-2">Manage match results, player stats, and tournaments</p>
           </div>
-          
+
           {currentUser ? (
             <div className="max-w-5xl mx-auto">
               <div className="flex justify-between mb-6 items-center">
@@ -87,15 +98,15 @@ const AdminPage = () => {
                     {currentUser.role === "admin" ? "Main Admin" : "Exco Member"}
                   </Badge>
                 </div>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="bg-white"
                   onClick={handleLogout}
                 >
                   <i className="ri-logout-box-r-line mr-1"></i> Logout
                 </Button>
               </div>
-              
+
               <Tabs defaultValue="match-results">
                 <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="match-results">Match Results</TabsTrigger>
@@ -114,15 +125,15 @@ const AdminPage = () => {
                     </>
                   )}
                 </TabsList>
-                
+
                 <TabsContent value="match-results" className="mt-6">
                   <MatchResultForm />
                 </TabsContent>
-                
+
                 <TabsContent value="live-updates" className="mt-6">
                   <LiveMatchAdmin />
                 </TabsContent>
-                
+
                 {currentUser.role === "admin" && (
                   <>
                     <TabsContent value="players" className="mt-6">
@@ -132,7 +143,7 @@ const AdminPage = () => {
                         <PlayerManagement />
                       </div>
                     </TabsContent>
-                    
+
                     <TabsContent value="tournaments" className="mt-6">
                       <div className="bg-white rounded-lg shadow-lg p-6">
                         <h2 className="font-montserrat font-bold text-xl text-royal-blue mb-4">Tournament Management</h2>
@@ -140,7 +151,7 @@ const AdminPage = () => {
                         <TournamentManagement />
                       </div>
                     </TabsContent>
-                    
+
                     <TabsContent value="users" className="mt-6">
                       <div className="bg-white rounded-lg shadow-lg p-6">
                         <h2 className="font-montserrat font-bold text-xl text-royal-blue mb-4">User Management</h2>
@@ -150,7 +161,7 @@ const AdminPage = () => {
                     </TabsContent>
                   </>
                 )}
-                
+
                 {currentUser.role === "exco" && (
                   <>
                     <TabsContent value="team-generator" className="mt-6">
@@ -159,7 +170,7 @@ const AdminPage = () => {
                         <p className="text-gray-600">Access team generation features for training sessions and matches.</p>
                       </div>
                     </TabsContent>
-                    
+
                     <TabsContent value="contact-messages" className="mt-6">
                       <div className="bg-white rounded-lg shadow-lg p-6">
                         <h2 className="font-montserrat font-bold text-xl text-royal-blue mb-6">Contact Form Messages</h2>
