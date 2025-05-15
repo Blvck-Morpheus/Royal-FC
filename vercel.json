@@ -1,9 +1,5 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist/public",
-  "installCommand": "npm install",
-  "framework": null,
   "builds": [
     {
       "src": "package.json",
@@ -13,14 +9,14 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/dist/index.js"
+      "dest": "dist/index.js"
     },
     {
       "handle": "filesystem"
     },
     {
       "src": "/(.*)",
-      "dest": "/dist/public/index.html"
+      "dest": "dist/public/index.html"
     }
   ],
   "env": {
