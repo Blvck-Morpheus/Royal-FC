@@ -498,10 +498,6 @@ router.post("/contact", async (req, res) => {
 router.post("/admin/login", async (req, res) => {
   try {
     console.log("Login attempt:", { ...req.body, password: '***' });
-    console.log("Request headers:", req.headers);
-
-    // Log the raw request body
-    console.log("Raw request body:", req.body);
 
     // Ensure admin user exists
     const adminUser = await storage.getUserByUsername("admin");
@@ -513,173 +509,34 @@ router.post("/admin/login", async (req, res) => {
         role: "admin"
       });
       console.log("Default admin user created");
-    } else {
-      console.log("Admin user exists:", { id: adminUser.id, username: adminUser.username, role: adminUser.role });
     }
 
-    const schema = z.object({
-      username: z.string().min(1),
-      password: z.string().min(1),
-      loginType: z.enum(["admin", "exco"]).optional(), // Make loginType optional for compatibility
-    });
-
-    // Try to validate the data
-    let validatedData;
-    try {
-      validatedData = schema.parse(req.body);
-      console.log("Validated data:", { ...validatedData, password: '***' });
-    } catch (validationError) {
-      console.error("Validation error:", validationError);
-      return res.status(400).json({
-        message: "Invalid input data",
-        details: validationError instanceof z.ZodError ? validationError.errors : "Unknown validation error"
-      });
-    }
-
-    // For backward compatibility, default to admin if loginType is not provided
-    if (!validatedData.loginType) {
-      validatedData.loginType = "admin";
-      console.log("LoginType not provided, defaulting to admin");
-    }
-
-    // Get user by username
-    const user = await storage.getUserByUsername(validatedData.username);
-    console.log("Found user:", user ? { ...user, password: '***' } : null);
-
-    // Check credentials
-    if (!user || user.password !== validatedData.password) {
-      console.log("Invalid credentials");
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
-
-    // Check if user role matches requested login type
-    if (user.role !== validatedData.loginType) {
-      console.log(`Role mismatch: user role ${user.role}, requested ${validatedData.loginType}`);
-      return res.status(403).json({
-        message: `You do not have ${validatedData.loginType} privileges. Your role is ${user.role}.`
-      });
-    }
-
-    // Set admin session
-    adminSession.authenticated = true;
-    adminSession.user = user;
-
-    console.log("Login successful:", { userId: user.id, role: user.role });
-
-    // Return a simplified user object to avoid any potential issues
-    const userResponse = {
-      id: user.id,
-      username: user.username,
-      role: user.role,
-      createdAt: user.createdAt
-    };
-
-    console.log("Sending response:", userResponse);
-
-    // Set explicit content type and stringify the response manually
-    res.setHeader('Content-Type', 'application/json');
-    res.send(JSON.stringify(userResponse));
+    // Placeholder for new authentication implementation
+    res.status(501).json({ message: "Authentication system is being updated. Please check back soon." });
   } catch (error) {
     console.error("Login error:", error);
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ message: "Invalid input", errors: error.errors });
-    }
-    res.status(500).json({ message: "Error during login" });
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-// Direct admin login endpoint - simplified for maximum compatibility
+// Direct admin login endpoint - placeholder
 router.post("/admin/direct-login", (req, res) => {
   console.log("Direct admin login attempt");
-
-  // Create a hardcoded admin user
-  const adminUser = {
-    id: 1,
-    username: "admin",
-    password: "password123",
-    role: "admin",
-    createdAt: new Date()
-  };
-
-  // Set admin session
-  adminSession.authenticated = true;
-  adminSession.user = adminUser;
-
-  console.log("Direct admin login successful");
-
-  // Return a simplified user object
-  const userResponse = {
-    id: adminUser.id,
-    username: adminUser.username,
-    role: adminUser.role,
-    authenticated: true
-  };
-
-  // Set explicit content type and stringify the response manually
-  res.setHeader('Content-Type', 'application/json');
-  res.send(JSON.stringify(userResponse));
+  res.status(501).json({ message: "Authentication system is being updated. Please check back soon." });
 });
 
+// Logout endpoint - placeholder
 router.post("/admin/logout", (req, res) => {
   console.log("Logout request received");
   adminSession.authenticated = false;
   adminSession.user = undefined;
-
-  console.log("User logged out, session cleared");
-
-  // Set explicit content type and stringify the response manually
-  res.setHeader('Content-Type', 'application/json');
-  res.send(JSON.stringify({ message: "Logout successful" }));
+  res.json({ message: "Logout successful" });
 });
 
+// Check auth endpoint - placeholder
 router.get("/admin/check-auth", async (req, res) => {
   console.log("Check auth request received");
-
-  // Ensure admin user exists
-  const adminUser = await storage.getUserByUsername("admin");
-  if (!adminUser) {
-    console.log("Admin user not found in check-auth, creating default admin user");
-    await storage.createUser({
-      username: "admin",
-      password: "password123",
-      role: "admin"
-    });
-    console.log("Default admin user created in check-auth");
-  } else {
-    console.log("Admin user exists in check-auth:", { id: adminUser.id, username: adminUser.username, role: adminUser.role });
-  }
-
-  console.log("Admin session:", {
-    authenticated: adminSession.authenticated,
-    user: adminSession.user ? {
-      id: adminSession.user.id,
-      username: adminSession.user.username,
-      role: adminSession.user.role
-    } : null
-  });
-
-  if (adminSession.authenticated && adminSession.user) {
-    // Return a simplified user object to avoid any potential issues
-    const userResponse = {
-      id: adminSession.user.id,
-      username: adminSession.user.username,
-      role: adminSession.user.role,
-      createdAt: adminSession.user.createdAt,
-      authenticated: true
-    };
-
-    console.log("Auth check successful, returning:", userResponse);
-
-    // Set explicit content type and stringify the response manually
-    res.setHeader('Content-Type', 'application/json');
-    res.send(JSON.stringify(userResponse));
-  } else {
-    console.log("Auth check failed, user not authenticated");
-
-    // Set explicit content type and stringify the response manually
-    res.setHeader('Content-Type', 'application/json');
-    res.send(JSON.stringify({ authenticated: false }));
-  }
+  res.json({ authenticated: false, message: "Authentication system is being updated. Please check back soon." });
 });
 
 // User Management API

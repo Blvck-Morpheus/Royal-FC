@@ -13,7 +13,6 @@ import TeamGeneratorPage from "@/pages/TeamGeneratorPage";
 import AboutPage from "@/pages/AboutPage";
 import ContactPage from "@/pages/ContactPage";
 import AdminPage from "@/pages/AdminPage";
-import { AuthProvider } from "@/contexts/AuthContext";
 
 function Router() {
   return (
@@ -35,14 +34,12 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <MainLayout>
-            <Router />
-          </MainLayout>
-        </TooltipProvider>
-      </AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <MainLayout>
+          <Router />
+        </MainLayout>
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }
