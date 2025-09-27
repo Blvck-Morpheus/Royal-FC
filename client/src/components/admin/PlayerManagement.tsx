@@ -144,10 +144,44 @@ const PlayerManagement = () => {
     setIsCreating(true);
   };
 
+  const handleAddNew = () => {
+    setEditingPlayer(null);
+    setIsCreating(true);
+    form.reset({
+      name: "",
+      position: "Midfielder",
+      jerseyNumber: 1,
+      photoUrl: "",
+      stats: {
+        goals: 0,
+        assists: 0,
+        cleanSheets: 0,
+        tackles: 0,
+        saves: 0,
+        gamesPlayed: 0,
+        skillRating: 3,
+      },
+    });
+  };
+
   const handleCancelEdit = () => {
     setEditingPlayer(null);
     setIsCreating(false);
-    form.reset();
+    form.reset({
+      name: "",
+      position: "Midfielder",
+      jerseyNumber: 1,
+      photoUrl: "",
+      stats: {
+        goals: 0,
+        assists: 0,
+        cleanSheets: 0,
+        tackles: 0,
+        saves: 0,
+        gamesPlayed: 0,
+        skillRating: 3,
+      },
+    });
   };
 
   const getPositionIcon = (position: string) => {
@@ -171,7 +205,7 @@ const PlayerManagement = () => {
           <h2 className="text-2xl font-bold">Player Management</h2>
           <p className="text-gray-600">Manage your club's player roster</p>
         </div>
-        <Button onClick={() => setIsCreating(true)} disabled={isCreating}>
+        <Button onClick={handleAddNew} disabled={isCreating}>
           <Plus className="w-4 h-4 mr-2" />
           Add Player
         </Button>

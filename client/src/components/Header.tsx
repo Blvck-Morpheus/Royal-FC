@@ -61,12 +61,6 @@ const Header = () => {
                 {item.name}
               </Link>
             ))}
-            <Link
-              href="/admin"
-              className="px-4 py-2 bg-royal-bright-blue text-white rounded-md font-bold transition duration-200 hover:bg-blue-400"
-            >
-              Admin
-            </Link>
           </nav>
         </div>
       </div>
@@ -84,13 +78,6 @@ const Header = () => {
               {item.name}
             </Link>
           ))}
-          <Link
-            href="/admin"
-            className="block text-white hover:text-royal-gold py-2 transition duration-200 font-bold"
-            onClick={closeMobileMenu}
-          >
-            Admin
-          </Link>
         </div>
       </div>
     </header>

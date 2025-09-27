@@ -12,7 +12,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle
-} from "@/components/ui/dialog";
 
 type LeaderboardCategory = "goals" | "assists" | "cleanSheets";
 
@@ -22,15 +21,10 @@ const LeaderboardTable = () => {
   const [playerToEdit, setPlayerToEdit] = useState<Player | null>(null);
   const [editValues, setEditValues] = useState<Record<string, number>>({});
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
-  const { data: players, isLoading, error } = useQuery<Player[]>({
-    queryKey: ['/api/players/leaderboard', category],
-  });
-  
-  // Check if user is logged in as admin
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -48,11 +42,12 @@ const LeaderboardTable = () => {
 
     checkAuth();
   }, []);
-  
+
   // Update player stats mutation
   const updatePlayerStatsMutation = useMutation({
     mutationFn: async ({ playerId, stats }: { playerId: number, stats: Record<string, number> }) => {
       const res = await apiRequest("PATCH", `/api/players/${playerId}/stats`, stats);
+{{ ... }}
       return await res.json();
     },
     onSuccess: () => {
