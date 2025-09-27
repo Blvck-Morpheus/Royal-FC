@@ -252,7 +252,11 @@ export class MemStorageImpl extends MemStorage {
       { name: "Meshack", position: "Midfielder", jerseyNumber: 25, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } },
       { name: "Sammy", position: "Forward", jerseyNumber: 26, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 4 } },
       { name: "Levino", position: "Midfielder", jerseyNumber: 27, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } },
-      { name: "Henry", position: "Defender", jerseyNumber: 28, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } }
+      { name: "Henry", position: "Defender", jerseyNumber: 28, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } },
+      // --- Additional players ---
+      { name: "Vdm", position: "Forward", jerseyNumber: 29, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 4 } },
+      { name: "Chuks", position: "Midfielder", jerseyNumber: 30, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 4 } },
+      { name: "Morpheus", position: "Midfielder", jerseyNumber: 31, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 5 } }
     ];
     
     // Create players and store their IDs
