@@ -261,6 +261,8 @@ router.get("/fixtures/:id", async (req, res) => {
 // Team Generator API
 router.post("/team-generator", async (req, res) => {
   try {
+    console.log("Team generation request:", req.body);
+    
     const schema = z.object({
       format: z.enum(["5-a-side", "7-a-side", "11-a-side"]),
       playerIds: z.array(z.number()),
@@ -271,14 +273,21 @@ router.post("/team-generator", async (req, res) => {
     });
 
     const validatedData = schema.parse(req.body) as TeamGenerationRequest;
+    console.log("Validated data:", validatedData);
+    
     const teams = await storage.generateTeams(validatedData);
+    console.log("Generated teams:", teams);
 
     res.json(teams);
   } catch (error) {
+    console.error("Team generation error:", error);
     if (error instanceof z.ZodError) {
       return res.status(400).json({ message: "Invalid input", errors: error.errors });
     }
-    res.status(500).json({ message: "Error generating teams" });
+    res.status(500).json({ 
+      message: "Error generating teams", 
+      error: error instanceof Error ? error.message : "Unknown error" 
+    });
   }
 });
 

@@ -62,7 +62,7 @@ const TeamGeneratorForm = () => {
     
     try {
       setIsGenerating(true);
-      const res = await apiRequest("POST", "/api/team-generator", {
+      const { data: teams } = await apiRequest("POST", "/api/team-generator", {
         format,
         playerIds: selectedPlayers,
         balanceMethod,
@@ -71,7 +71,6 @@ const TeamGeneratorForm = () => {
         competitionMode: isPrivilegedUser ? competitionMode : false
       });
       
-      const teams = await res.json();
       setGeneratedTeams(teams);
       
       toast({
@@ -98,11 +97,9 @@ const TeamGeneratorForm = () => {
     
     try {
       setIsSaving(true);
-      const res = await apiRequest("POST", "/api/team-generator/save", {
+      await apiRequest("POST", "/api/team-generator/save", {
         teams: generatedTeams,
       });
-      
-      if (!res.ok) throw new Error("Failed to save teams");
       
       toast({
         title: "Teams saved",
