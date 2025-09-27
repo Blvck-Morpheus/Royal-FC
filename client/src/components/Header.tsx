@@ -12,6 +12,7 @@ const Header = () => {
     { name: "Tournaments", href: "/tournaments" },
     { name: "Leaderboard", href: "/leaderboard" },
     { name: "Team Generator", href: "/team-generator" },
+    { name: "Admin", href: "/admin" },
     { name: "About", href: "/about" },
     { name: "Contact", href: "/contact" },
   ];

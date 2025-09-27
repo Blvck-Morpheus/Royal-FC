@@ -258,7 +258,8 @@ export class MemStorageImpl extends MemStorage {
       { name: "Morpheus", position: "Forward", jerseyNumber: 69, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } },
       // Note: Arinze (#14) and Messi (#18) have duplicate numbers - need clarification
       { name: "Arinze", position: "Midfielder", jerseyNumber: 24, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 4 } },
-      { name: "Messi", position: "Midfielder", jerseyNumber: 20, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 2 } }
+      { name: "Messi", position: "Midfielder", jerseyNumber: 20, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 2 } },
+      { name: "Zico", position: "Forward", jerseyNumber: 9, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 4 } }
     ];
     
     // Create players and store their IDs
