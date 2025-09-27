@@ -12,6 +12,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle
+} from "@/components/ui/dialog";
 
 type LeaderboardCategory = "goals" | "assists" | "cleanSheets";
 
