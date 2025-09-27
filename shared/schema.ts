@@ -239,13 +239,15 @@ export interface Tournament {
   name: string;
   startDate: Date;
   endDate: Date;
-  status: 'upcoming' | 'ongoing' | 'completed';
+  status: 'active' | 'completed';
   description?: string;
   format: '5-a-side' | '7-a-side' | '11-a-side';
-  maxTeams: number;
-  registrationDeadline: Date;
+  maxTeams?: number;
+  registrationDeadline?: Date;
   createdAt: Date;
-  updatedAt: Date;
+  updatedAt?: Date;
+  teams?: TournamentTeam[];
+  fixtures?: Fixture[];
 }
 
 export interface CreateTournamentInput {

@@ -37,7 +37,6 @@ const TournamentManagement = () => {
   const queryClient = useQueryClient();
   const [generatedTeams, setGeneratedTeams] = useState<GeneratedTeam[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
-
   // Fetch tournaments
   const { data: tournaments = [] } = useQuery<Tournament[]>({
     queryKey: ["/api/tournaments"],
@@ -47,6 +46,10 @@ const TournamentManagement = () => {
   const { data: players = [] } = useQuery<Player[]>({
     queryKey: ["/api/players"],
   });
+
+  // Filter tournaments by status
+  const activeTournaments = tournaments?.filter(t => t.status === "active") || [];
+  const pastTournaments = tournaments?.filter(t => t.status === "completed") || [];
 
   // Tournament creation form
   const tournamentForm = useForm<CreateTournamentInput>({
@@ -353,7 +356,7 @@ const TournamentManagement = () => {
                   <SelectValue placeholder="Select Tournament" />
                 </SelectTrigger>
                 <SelectContent>
-                  {tournaments.map((tournament) => (
+                  {activeTournaments.map((tournament) => (
                     <SelectItem key={tournament.id} value={tournament.id.toString()}>
                       {tournament.name} ({format(new Date(tournament.startDate), "MMM d, yyyy")})
                     </SelectItem>

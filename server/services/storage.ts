@@ -90,11 +90,6 @@ export class MemStorage implements IStorage {
     this.tournamentTeams = new Map();
     this.fixtures = new Map();
     this.matchResults = new Map();
-    
-    // Remove admin user creation from here since it's handled in the implementation
-    
-    // Seed some initial data for development
-    this.seedData();
   }
 
   // User (Admin) methods
@@ -465,11 +460,6 @@ export class MemStorage implements IStorage {
   }
   
   // Implementation of other methods will be added in the next file due to size limitations
-  
-  // Seed data for development
-  private async seedData() {
-    // This will be implemented in a separate file
-  }
   
   // Get leaderboard
   async getLeaderboard(category: string = "goals"): Promise<Player[]> {

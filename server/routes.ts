@@ -1,9 +1,10 @@
 import express from 'express';
 import { storage } from "./services/storage-impl";
 import { z } from "zod";
-import { MatchResultFormData, TeamGenerationRequest, ContactFormData } from "@shared/schema";
-import { adminSession } from './middleware/auth';
-import { requireAdmin } from './middleware';
+import { TeamGenerationRequest, ContactFormData } from "@shared/schema";
+import { requireAuth, requireAdmin, requireExco } from './middleware/auth';
+import { AuthService } from './services/authService';
+import { TokenAuthService } from './services/tokenAuth';
 
 const router = express.Router();
 
@@ -32,13 +33,8 @@ router.get("/players/:id", async (req, res) => {
   }
 });
 
-router.post("/players", async (req, res) => {
+router.post("/players", requireExco, async (req, res) => {
   try {
-    // Check if admin is authenticated
-    if (!adminSession.authenticated) {
-      return res.status(401).json({ message: "Unauthorized. Admin access required." });
-    }
-
     const playerData = req.body;
     const newPlayer = await storage.createPlayer(playerData);
     res.status(201).json(newPlayer);
@@ -47,13 +43,8 @@ router.post("/players", async (req, res) => {
   }
 });
 
-router.put("/players/:id", async (req, res) => {
+router.put("/players/:id", requireExco, async (req, res) => {
   try {
-    // Check if admin is authenticated
-    if (!adminSession.authenticated) {
-      return res.status(401).json({ message: "Unauthorized. Admin access required." });
-    }
-
     const playerId = parseInt(req.params.id);
     const playerData = req.body;
 
@@ -69,13 +60,8 @@ router.put("/players/:id", async (req, res) => {
   }
 });
 
-router.delete("/players/:id", async (req, res) => {
+router.delete("/players/:id", requireExco, async (req, res) => {
   try {
-    // Check if admin is authenticated
-    if (!adminSession.authenticated) {
-      return res.status(401).json({ message: "Unauthorized. Admin access required." });
-    }
-
     const playerId = parseInt(req.params.id);
 
     // Check if the player exists
@@ -95,13 +81,8 @@ router.delete("/players/:id", async (req, res) => {
 });
 
 // Add save roster endpoint
-router.post("/players/save-roster", async (req, res) => {
+router.post("/players/save-roster", requireExco, async (req, res) => {
   try {
-    // Check if admin is authenticated
-    if (!adminSession.authenticated) {
-      return res.status(401).json({ message: "Unauthorized. Admin access required." });
-    }
-
     const { players } = req.body;
     
     // Save the roster
@@ -125,13 +106,8 @@ router.get("/players/leaderboard/:category?", async (req, res) => {
 });
 
 // Update player stats from leaderboard
-router.patch("/players/:id/stats", async (req, res) => {
+router.patch("/players/:id/stats", requireExco, async (req, res) => {
   try {
-    // Check if admin is authenticated
-    if (!adminSession.authenticated) {
-      return res.status(401).json({ message: "Unauthorized. Admin access required." });
-    }
-
     const playerId = parseInt(req.params.id);
     const statsData = req.body;
 
@@ -155,48 +131,7 @@ router.patch("/players/:id/stats", async (req, res) => {
   }
 });
 
-// Tournaments API
-router.get("/tournaments", async (req, res) => {
-  try {
-    const tournaments = await storage.getTournaments();
-    res.json(tournaments);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching tournaments" });
-  }
-});
-
-router.get("/tournaments/active", async (req, res) => {
-  try {
-    const tournaments = await storage.getActiveTournaments();
-    res.json(tournaments);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching active tournaments" });
-  }
-});
-
-router.get("/tournaments/past", async (req, res) => {
-  try {
-    const tournaments = await storage.getPastTournaments();
-    res.json(tournaments);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching past tournaments" });
-  }
-});
-
-router.get("/tournaments/:id", async (req, res) => {
-  try {
-    const tournamentId = parseInt(req.params.id);
-    const tournament = await storage.getTournament(tournamentId);
-
-    if (!tournament) {
-      return res.status(404).json({ message: "Tournament not found" });
-    }
-
-    res.json(tournament);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching tournament" });
-  }
-});
+// Remove duplicate tournament routes - using the newer implementation below
 
 // Fixtures API
 router.get("/fixtures", async (req, res) => {
@@ -255,13 +190,8 @@ router.patch("/fixtures/:id/score", async (req, res) => {
   }
 });
 
-router.patch("/fixtures/:id/start", async (req, res) => {
+router.patch("/fixtures/:id/start", requireExco, async (req, res) => {
   try {
-    // Check if admin is authenticated
-    if (!adminSession.authenticated) {
-      return res.status(401).json({ message: "Unauthorized. Admin access required." });
-    }
-
     const fixtureId = parseInt(req.params.id);
 
     const updatedFixture = await storage.updateFixture(fixtureId, {
@@ -280,13 +210,8 @@ router.patch("/fixtures/:id/start", async (req, res) => {
   }
 });
 
-router.patch("/fixtures/:id/end", async (req, res) => {
+router.patch("/fixtures/:id/end", requireExco, async (req, res) => {
   try {
-    // Check if admin is authenticated
-    if (!adminSession.authenticated) {
-      return res.status(401).json({ message: "Unauthorized. Admin access required." });
-    }
-
     const fixtureId = parseInt(req.params.id);
     const { homeTeamScore, awayTeamScore } = req.body;
 
@@ -425,13 +350,8 @@ router.post("/team-generator/record-result", async (req, res) => {
 });
 
 // Match Result API
-router.post("/match-results", async (req, res) => {
+router.post("/match-results", requireExco, async (req, res) => {
   try {
-    // Check if admin is authenticated
-    if (!adminSession.authenticated) {
-      return res.status(401).json({ message: "Unauthorized. Admin access required." });
-    }
-
     const schema = z.object({
       fixtureId: z.string(),
       homeTeamScore: z.number().min(0),
@@ -503,11 +423,13 @@ router.post("/admin/login", async (req, res) => {
     });
 
     const validatedData = schema.parse(req.body);
-    const user = await storage.getUserByUsername(validatedData.username);
     
-    console.log("Found user:", user ? { ...user, password: '***' } : null);
+    // Authenticate user with proper password comparison
+    const user = await AuthService.authenticateUser(validatedData.username, validatedData.password);
+    
+    console.log("Authentication result:", user ? { ...user, password: '***' } : null);
 
-    if (!user || user.password !== validatedData.password) {
+    if (!user) {
       console.log("Invalid credentials");
       return res.status(401).json({ message: "Invalid credentials" });
     }
@@ -520,12 +442,22 @@ router.post("/admin/login", async (req, res) => {
       });
     }
 
-    // Set admin session
-    adminSession.authenticated = true;
-    adminSession.user = user;
+    // Set user session using AuthService (for local development)
+    AuthService.setUserSession(req, user);
+    
+    // Generate JWT token for Vercel compatibility
+    const token = TokenAuthService.generateToken(user);
     
     console.log("Login successful:", { userId: user.id, role: user.role });
-    res.json(user);
+    res.json({ 
+      user: {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        createdAt: user.createdAt
+      },
+      token 
+    });
   } catch (error) {
     console.error("Login error:", error);
     if (error instanceof z.ZodError) {
@@ -536,26 +468,22 @@ router.post("/admin/login", async (req, res) => {
 });
 
 router.post("/admin/logout", (req, res) => {
-  adminSession.authenticated = false;
+  AuthService.clearUserSession(req);
   res.json({ message: "Logout successful" });
 });
 
 router.get("/admin/check-auth", (req, res) => {
-  if (adminSession.authenticated && adminSession.user) {
-    res.json(adminSession.user);
+  if (AuthService.isAuthenticated(req)) {
+    const user = AuthService.getUserFromSession(req);
+    res.json(user);
   } else {
     res.status(401).json({ authenticated: false });
   }
 });
 
 // User Management API
-router.get("/users", async (req, res) => {
+router.get("/users", requireAdmin, async (req, res) => {
   try {
-    // Check if admin is authenticated
-    if (!adminSession.authenticated) {
-      return res.status(401).json({ message: "Unauthorized. Admin access required." });
-    }
-
     const users = await storage.getUsers();
     res.json(users);
   } catch (error) {
@@ -563,13 +491,8 @@ router.get("/users", async (req, res) => {
   }
 });
 
-router.post("/users", async (req, res) => {
+router.post("/users", requireAdmin, async (req, res) => {
   try {
-    // Check if admin is authenticated
-    if (!adminSession.authenticated) {
-      return res.status(401).json({ message: "Unauthorized. Admin access required." });
-    }
-
     const userData = req.body;
     
     // Validate that we're only creating exco members
@@ -577,20 +500,16 @@ router.post("/users", async (req, res) => {
       return res.status(400).json({ message: "Can only create exco member accounts" });
     }
 
-    const newUser = await storage.createUser(userData);
+    // Create user with hashed password
+    const newUser = await AuthService.createUser(userData.username, userData.password, userData.role);
     res.status(201).json(newUser);
   } catch (error) {
     res.status(500).json({ message: "Error creating user" });
   }
 });
 
-router.delete("/users/:id", async (req, res) => {
+router.delete("/users/:id", requireAdmin, async (req, res) => {
   try {
-    // Check if admin is authenticated
-    if (!adminSession.authenticated) {
-      return res.status(401).json({ message: "Unauthorized. Admin access required." });
-    }
-
     const userId = parseInt(req.params.id);
 
     // Check if the user exists
@@ -624,12 +543,15 @@ router.get('/tournaments', async (req, res) => {
   }
 });
 
-router.post('/tournaments', requireAdmin, async (req, res) => {
+router.post('/tournaments', requireExco, async (req, res) => {
   try {
     const tournament = await storage.createTournament(req.body);
-    res.json(tournament);
+    res.status(201).json(tournament);
   } catch (error) {
-    res.status(500).json({ message: 'Failed to create tournament' });
+    console.error('Tournament creation error:', error);
+    res.status(500).json({ 
+      message: error instanceof Error ? error.message : 'Failed to create tournament' 
+    });
   }
 });
 
@@ -645,11 +567,12 @@ router.get('/tournaments/:id', async (req, res) => {
   }
 });
 
-router.post('/tournament-teams', requireAdmin, async (req, res) => {
+router.post('/tournament-teams', requireExco, async (req, res) => {
   try {
     const team = await storage.createTournamentTeam(req.body);
-    res.json(team);
+    res.status(201).json(team);
   } catch (error) {
+    console.error('Team creation error:', error);
     res.status(500).json({ 
       message: error instanceof Error ? error.message : 'Failed to create team' 
     });

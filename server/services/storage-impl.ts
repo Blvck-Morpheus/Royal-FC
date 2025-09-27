@@ -1,5 +1,6 @@
 import { MemStorage } from './storage';
-import { TeamGenerationRequest, GeneratedTeam } from '@shared/schema';
+import { TeamGenerationRequest, GeneratedTeam, User, InsertUser, Player, PlayerMetrics, Tournament, TournamentTeam, CreateTournamentInput, CreateTournamentTeamInput } from '@shared/schema';
+import { AuthService } from './authService';
 
 // Extend the MemStorage class to add the team generator implementation
 export class MemStorageImpl extends MemStorage {
@@ -26,21 +27,8 @@ export class MemStorageImpl extends MemStorage {
     this.fixtures = new Map();
     this.matchResults = new Map();
     
-    // Create the admin user with fixed ID 1
-    const adminUser = {
-      username: "admin",
-      password: "password123",
-      role: "admin" as const,
-      id: 1,
-      createdAt: new Date()
-    };
-    
-    // Set the admin user directly in the map
-    this.users.set(adminUser.id, adminUser);
-    console.log("Admin user created:", { ...adminUser, password: '***' });
-
-    // Set the userId counter to start after admin's ID
-    this.userId = 2;
+    // Set the userId counter to start at 1
+    this.userId = 1;
 
     // Seed some initial data for development
     this.seedData();
@@ -52,21 +40,16 @@ export class MemStorageImpl extends MemStorage {
     this.teamId = 1;
   }
 
-  // Override createUser to ensure we never overwrite admin
+  // Override createUser to work with AuthService
   async createUser(insertUser: InsertUser): Promise<User> {
-    // If trying to create an admin, reject
-    if (insertUser.role === "admin") {
-      throw new Error("Cannot create additional admin users");
-    }
-    
-    // Get next available ID (skip 1 as it's reserved for admin)
+    // Get next available ID
     const id = this.userId++;
     
     const user: User = { 
       ...insertUser, 
       id,
       createdAt: new Date(),
-      role: "exco" // Force role to be exco
+      role: insertUser.role || "exco"
     };
     
     this.users.set(id, user);
@@ -100,8 +83,8 @@ export class MemStorageImpl extends MemStorage {
     // Initialize teams
     const teams: GeneratedTeam[] = Array(teamsCount).fill(null).map((_, i) => ({
       name: `Team ${i + 1}`,
-      players: [],
-      totalSkill: 0,
+          players: [],
+          totalSkill: 0,
       matchHistory: [],
       averageWinRate: 0,
       positionBalance: 0
@@ -119,7 +102,7 @@ export class MemStorageImpl extends MemStorage {
     // Distribute players to teams
     sortedPlayers.forEach((player, index) => {
       const teamIndex = index % teamsCount;
-      teams[teamIndex].players.push(player);
+          teams[teamIndex].players.push(player);
       teams[teamIndex].totalSkill += player.stats.skillRating;
     });
 
@@ -412,13 +395,18 @@ export class MemStorageImpl extends MemStorage {
   async createTournament(data: CreateTournamentInput): Promise<Tournament> {
     const tournament: Tournament = {
       id: this.tournamentId++,
-      ...data,
-      status: 'upcoming',
+      name: data.name,
+      description: data.description,
+      format: data.format,
+      maxTeams: data.maxTeams,
+      status: 'active',
       startDate: new Date(data.startDate),
       endDate: new Date(data.endDate),
       registrationDeadline: new Date(data.registrationDeadline),
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      teams: [],
+      fixtures: []
     };
 
     this.tournaments.set(tournament.id, tournament);
@@ -494,6 +482,29 @@ export class MemStorageImpl extends MemStorage {
     tournament.updatedAt = new Date();
     this.tournaments.set(tournamentId, tournament);
     return tournament;
+  }
+
+  async getActiveTournaments(): Promise<Tournament[]> {
+    return Array.from(this.tournaments.values()).filter(t => t.status === 'active');
+  }
+
+  async getPastTournaments(): Promise<Tournament[]> {
+    return Array.from(this.tournaments.values()).filter(t => t.status === 'completed');
+  }
+
+  async getTournament(id: number): Promise<Tournament | null> {
+    const tournament = this.tournaments.get(id);
+    if (!tournament) return null;
+    
+    // Include teams and fixtures
+    const teams = this.tournamentTeams.get(id) || [];
+    const fixtures = Array.from(this.fixtures.values()).filter(f => f.tournamentId === id);
+    
+    return {
+      ...tournament,
+      teams,
+      fixtures
+    };
   }
 }
 
