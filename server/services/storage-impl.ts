@@ -306,7 +306,33 @@ export class MemStorageImpl extends MemStorage {
           gamesPlayed: 16,
           skillRating: 3
         }
-      }
+      },
+      // --- Demo players added for hangout ---
+      { name: "Khalifa", position: "Goalkeeper", jerseyNumber: 1, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } },
+      { name: "IK", position: "Defender", jerseyNumber: 2, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } },
+      { name: "Happy", position: "Midfielder", jerseyNumber: 3, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } },
+      { name: "Uche", position: "Defender", jerseyNumber: 4, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } },
+      { name: "Ibori", position: "Midfielder", jerseyNumber: 5, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } },
+      { name: "Ifeanyi", position: "Midfielder", jerseyNumber: 6, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } },
+      { name: "Collins", position: "Defender", jerseyNumber: 7, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } },
+      { name: "Lamptey", position: "Midfielder", jerseyNumber: 8, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } },
+      { name: "Sureboy", position: "Goalkeeper", jerseyNumber: 12, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } },
+      { name: "Onose", position: "Defender", jerseyNumber: 13, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } },
+      { name: "Arnold", position: "Defender", jerseyNumber: 14, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } },
+      { name: "Onochie", position: "Midfielder", jerseyNumber: 15, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } },
+      { name: "Batshuayi", position: "Forward", jerseyNumber: 16, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 4 } },
+      { name: "Simon", position: "Defender", jerseyNumber: 17, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } },
+      { name: "Shedrach", position: "Midfielder", jerseyNumber: 18, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } },
+      { name: "Iron Man", position: "Forward", jerseyNumber: 19, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 4 } },
+      { name: "Successful", position: "Midfielder", jerseyNumber: 20, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } },
+      { name: "Messi", position: "Forward", jerseyNumber: 21, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 5 } },
+      { name: "Solibe", position: "Midfielder", jerseyNumber: 22, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } },
+      { name: "Ugo", position: "Forward", jerseyNumber: 23, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 4 } },
+      { name: "Arinze", position: "Defender", jerseyNumber: 24, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } },
+      { name: "Meshack", position: "Midfielder", jerseyNumber: 25, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } },
+      { name: "Sammy", position: "Forward", jerseyNumber: 26, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 4 } },
+      { name: "Levino", position: "Midfielder", jerseyNumber: 27, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } },
+      { name: "Henry", position: "Defender", jerseyNumber: 28, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } }
     ];
     
     // Create players and store their IDs
