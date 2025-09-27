@@ -1,26 +1,26 @@
 {
   "version": 2,
-  "builds": [
+  "buildCommand": "npm run vercel-build",
+  "outputDirectory": "dist/public",
+  "installCommand": "npm install",
+  "functions": {
+    "dist/index.js": {
+      "runtime": "@vercel/node@3"
+    }
+  },
+  "rewrites": [
     {
-      "src": "dist/public/**",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "dist/index.js",
-      "use": "@vercel/node"
+      "source": "/api/(.*)",
+      "destination": "/dist/index.js"
     }
   ],
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/dist/index.js"
-    },
     {
       "handle": "filesystem"
     },
     {
       "src": "/(.*)",
-      "dest": "/dist/public/index.html"
+      "dest": "/index.html"
     }
   ],
   "env": {
