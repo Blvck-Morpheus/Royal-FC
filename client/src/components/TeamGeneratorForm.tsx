@@ -62,7 +62,9 @@ const TeamGeneratorForm = () => {
     
     try {
       setIsGenerating(true);
-      const { data: teams } = await apiRequest("POST", "/api/team-generator", {
+      console.log("Sending team generation request...");
+      
+      const response = await apiRequest("POST", "/api/team-generator", {
         format,
         playerIds: selectedPlayers,
         balanceMethod,
@@ -70,6 +72,10 @@ const TeamGeneratorForm = () => {
         considerHistory: isPrivilegedUser ? considerHistory : false,
         competitionMode: isPrivilegedUser ? competitionMode : false
       });
+      
+      console.log("API Response:", response);
+      const teams = response.data;
+      console.log("Teams data:", teams);
       
       setGeneratedTeams(teams);
       
