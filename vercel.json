@@ -1,8 +1,6 @@
 {
-  "version": 2,
   "buildCommand": "npm run vercel-build",
   "outputDirectory": "dist/public",
-  "installCommand": "npm install",
   "functions": {
     "dist/index.js": {
       "runtime": "@vercel/node@3"
@@ -13,17 +11,5 @@
       "source": "/api/(.*)",
       "destination": "/dist/index.js"
     }
-  ],
-  "routes": [
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }
