@@ -29,6 +29,10 @@ export async function apiRequest<T = any>(
   const token = localStorage.getItem('auth-token');
 
   try {
+    // Create AbortController for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
     const response = await fetch(fullUrl, {
       method,
       headers: {
@@ -39,7 +43,10 @@ export async function apiRequest<T = any>(
       body: data ? JSON.stringify(data) : undefined,
       credentials: "include",
       mode: "cors",
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     // Clone the response before checking if it's ok
     const responseClone = response.clone();
@@ -68,6 +75,9 @@ export async function apiRequest<T = any>(
     // Return both the response object and the parsed data
     return { response, data: responseData };
   } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new Error('Request timed out. Please try again.');
+    }
     if (error instanceof TypeError && error.message === 'Failed to fetch') {
       const baseUrl = API_BASE_URL || window.location.origin;
       throw new Error(`Unable to connect to server at ${baseUrl}. Please try again later.`);

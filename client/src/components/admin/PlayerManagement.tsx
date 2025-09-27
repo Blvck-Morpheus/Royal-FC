@@ -72,27 +72,7 @@ const PlayerManagement = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/players"] });
       toast({ title: "Success", description: "Player created successfully" });
-      form.reset();
-      setIsCreating(false);
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to create player",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Update player mutation
-  const updatePlayer = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: Partial<Player> }) => {
-      const { data: result } = await apiRequest("PUT", `/api/players/${id}`, data);
-      return result;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/players"] });
-      toast({ title: "Success", description: "Player updated successfully" });
+      // Reset all states
       setEditingPlayer(null);
       setIsCreating(false);
       form.reset({
@@ -112,11 +92,65 @@ const PlayerManagement = () => {
       });
     },
     onError: (error) => {
+      console.error("Create player error:", error);
+      // Reset states even on error to prevent stuck state
+      setIsCreating(false);
+      setEditingPlayer(null);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to create player",
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
+      // Always reset loading states
+      setIsCreating(false);
+    },
+  });
+
+  // Update player mutation
+  const updatePlayer = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: Partial<Player> }) => {
+      const { data: result } = await apiRequest("PUT", `/api/players/${id}`, data);
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/players"] });
+      toast({ title: "Success", description: "Player updated successfully" });
+      // Reset all states
+      setEditingPlayer(null);
+      setIsCreating(false);
+      form.reset({
+        name: "",
+        position: "Midfielder",
+        jerseyNumber: 1,
+        photoUrl: "",
+        stats: {
+          goals: 0,
+          assists: 0,
+          cleanSheets: 0,
+          tackles: 0,
+          saves: 0,
+          gamesPlayed: 0,
+          skillRating: 3,
+        },
+      });
+    },
+    onError: (error) => {
+      console.error("Update player error:", error);
+      // Reset states even on error to prevent stuck state
+      setIsCreating(false);
+      setEditingPlayer(null);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to update player",
         variant: "destructive",
       });
+    },
+    onSettled: () => {
+      // Always reset loading states
+      setIsCreating(false);
+      setEditingPlayer(null);
     },
   });
 
