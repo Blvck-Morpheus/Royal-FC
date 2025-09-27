@@ -25,39 +25,77 @@ interface AdminLoginProps {
 const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const { toast } = useToast();
-  
+
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       username: "",
       password: "",
+      loginType: "admin", // Default to admin login
     },
   });
 
   const onSubmit = async (data: LoginFormValues) => {
     try {
       setIsLoggingIn(true);
-      
+
       console.log("Attempting login with:", {
         ...data,
         password: '***'
       });
-      
-      const response = await apiRequest("POST", "/api/admin/login", data);
-      
-      if (!response.ok) {
-        const errorData = await response.json();
+
+      // Log the exact data being sent
+      const loginData = {
+        username: data.username,
+        password: data.password,
+        loginType: data.loginType || "admin" // Ensure loginType is set
+      };
+
+      console.log("Sending login data:", {
+        ...loginData,
+        password: "***"
+      });
+
+      // Use direct fetch for maximum compatibility
+      const response = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(loginData),
+        credentials: "include",
+      });
+
+      // Get the response text first
+      const responseText = await response.text();
+      console.log("Raw response text:", responseText);
+
+      // Try to parse the response as JSON
+      let userData;
+      try {
+        userData = responseText ? JSON.parse(responseText) : {};
+        console.log("Parsed login response:", userData);
+      } catch (e) {
+        console.error("Error parsing response:", e);
         toast({
-          title: "Login failed",
-          description: errorData.message || "Invalid credentials",
+          title: "Login error",
+          description: "Could not parse server response",
           variant: "destructive",
         });
         return;
       }
-      
-      const userData = await response.json();
-      console.log("Login response:", userData);
-      
+
+      // Check if the response was successful
+      if (!response.ok) {
+        toast({
+          title: "Login failed",
+          description: userData.message || "Invalid credentials",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Check if user role matches requested login type
       if (userData.role !== data.loginType) {
         toast({
           title: "Access Denied",
@@ -66,12 +104,12 @@ const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
         });
         return;
       }
-      
+
       toast({
         title: "Login successful",
         description: `You are now logged in as ${userData.role === "admin" ? "a main admin" : "an exco member"}`,
       });
-      
+
       onLoginSuccess(userData);
     } catch (error) {
       console.error("Login error:", error);
@@ -91,7 +129,7 @@ const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
         <h3 className="font-montserrat font-bold text-xl text-royal-blue mb-2">Admin Access</h3>
         <p className="text-sm text-gray-600">Enter your credentials to access the admin area</p>
       </div>
-      
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
@@ -128,7 +166,7 @@ const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="username"
@@ -142,7 +180,7 @@ const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="password"
@@ -156,9 +194,9 @@ const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
               </FormItem>
             )}
           />
-          
-          <Button 
-            type="submit" 
+
+          <Button
+            type="submit"
             className="w-full bg-royal-blue hover:bg-royal-blue/90"
             disabled={isLoggingIn}
           >

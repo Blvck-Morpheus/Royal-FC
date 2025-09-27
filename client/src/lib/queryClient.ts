@@ -1,6 +1,9 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
-const API_BASE_URL = 'http://localhost:5000';
+// In production, use the current domain, otherwise use localhost
+const API_BASE_URL = process.env.NODE_ENV === 'production'
+  ? '' // Empty string means use the current domain
+  : 'http://localhost:5001';
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -15,15 +18,15 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
-export async function apiRequest(
+export async function apiRequest<T = any>(
   method: string,
   url: string,
   data?: unknown | undefined,
-): Promise<Response> {
+): Promise<{ response: Response; data: T }> {
   const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
-  
+
   try {
-    const res = await fetch(fullUrl, {
+    const response = await fetch(fullUrl, {
       method,
       headers: {
         ...(data ? { "Content-Type": "application/json" } : {}),
@@ -34,11 +37,36 @@ export async function apiRequest(
       mode: "cors",
     });
 
-    await throwIfResNotOk(res);
-    return res;
+    // Clone the response before checking if it's ok
+    const responseClone = response.clone();
+
+    // Check if response is ok
+    if (!response.ok) {
+      let errorMessage;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || response.statusText;
+      } catch {
+        errorMessage = await response.text() || response.statusText;
+      }
+      throw new Error(`${response.status}: ${errorMessage}`);
+    }
+
+    // Parse the JSON from the cloned response
+    let responseData: T;
+    try {
+      responseData = await responseClone.json();
+    } catch (e) {
+      console.error("Error parsing response:", e);
+      throw new Error("Failed to parse response data");
+    }
+
+    // Return both the response object and the parsed data
+    return { response, data: responseData };
   } catch (error) {
     if (error instanceof TypeError && error.message === 'Failed to fetch') {
-      throw new Error(`Unable to connect to server at ${API_BASE_URL}. Please ensure the server is running.`);
+      const baseUrl = API_BASE_URL || window.location.origin;
+      throw new Error(`Unable to connect to server at ${baseUrl}. Please try again later.`);
     }
     throw error;
   }
@@ -52,7 +80,7 @@ export const getQueryFn: <T>(options: {
   async ({ queryKey }) => {
     const url = queryKey[0] as string;
     const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
-    
+
     try {
       const res = await fetch(fullUrl, {
         headers: {
@@ -70,7 +98,8 @@ export const getQueryFn: <T>(options: {
       return await res.json();
     } catch (error) {
       if (error instanceof TypeError && error.message === 'Failed to fetch') {
-        throw new Error(`Unable to connect to server at ${API_BASE_URL}. Please ensure the server is running.`);
+        const baseUrl = API_BASE_URL || window.location.origin;
+        throw new Error(`Unable to connect to server at ${baseUrl}. Please try again later.`);
       }
       throw error;
     }
