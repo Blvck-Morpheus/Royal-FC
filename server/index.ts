@@ -65,17 +65,20 @@ app.use((req: express.Request, res: express.Response) => {
   res.status(404).json({ message: 'Not Found' });
 });
 
+// Initialize default admin user
+(async () => {
+  try {
+    await AuthService.initializeDefaultAdmin();
+  } catch (error) {
+    console.error('Failed to initialize default admin:', error);
+  }
+})();
+
 if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, async () => {
+  app.listen(PORT, () => {
     console.log(`[express] Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-    
-    // Initialize default admin user
-    try {
-      await AuthService.initializeDefaultAdmin();
-    } catch (error) {
-      console.error('Failed to initialize default admin:', error);
-    }
   });
 }
 
+// Export for Vercel
 export default app;
