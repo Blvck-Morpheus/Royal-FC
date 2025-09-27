@@ -226,88 +226,8 @@ export class MemStorageImpl extends MemStorage {
   
   // Seed data for development
   async seedData() {
-    // Create some players
+    // Your football hangout squad (26 players)
     const players = [
-      {
-        name: "Jamal Okoye",
-        position: "Forward",
-        jerseyNumber: 9,
-        photoUrl: "https://randomuser.me/api/portraits/men/1.jpg",
-        stats: {
-          goals: 12,
-          assists: 5,
-          cleanSheets: 0,
-          tackles: 0,
-          saves: 0,
-          gamesPlayed: 18,
-          skillRating: 4
-        },
-        badges: ["goldenBoot"]
-      },
-      {
-        name: "Kwame Nduka",
-        position: "Midfielder",
-        jerseyNumber: 10,
-        photoUrl: "https://randomuser.me/api/portraits/men/2.jpg",
-        stats: {
-          goals: 5,
-          assists: 10,
-          cleanSheets: 0,
-          tackles: 15,
-          saves: 0,
-          gamesPlayed: 20,
-          skillRating: 5
-        },
-        badges: ["playmaker"]
-      },
-      {
-        name: "Tunde Chukwu",
-        position: "Goalkeeper",
-        jerseyNumber: 1,
-        photoUrl: "https://randomuser.me/api/portraits/men/3.jpg",
-        stats: {
-          goals: 0,
-          assists: 0,
-          cleanSheets: 8,
-          tackles: 0,
-          saves: 45,
-          gamesPlayed: 15,
-          skillRating: 4
-        },
-        badges: ["cleanSheetKing"]
-      },
-      {
-        name: "Emeka Obi",
-        position: "Defender",
-        jerseyNumber: 4,
-        photoUrl: "https://randomuser.me/api/portraits/men/4.jpg",
-        stats: {
-          goals: 1,
-          assists: 2,
-          cleanSheets: 0,
-          tackles: 30,
-          saves: 0,
-          gamesPlayed: 18,
-          skillRating: 4
-        },
-        badges: ["ironDefense"]
-      },
-      {
-        name: "Chidi Eze",
-        position: "Forward",
-        jerseyNumber: 11,
-        photoUrl: "https://randomuser.me/api/portraits/men/5.jpg",
-        stats: {
-          goals: 8,
-          assists: 3,
-          cleanSheets: 0,
-          tackles: 0,
-          saves: 0,
-          gamesPlayed: 16,
-          skillRating: 3
-        }
-      },
-      // --- Demo players added for hangout ---
       { name: "Khalifa", position: "Goalkeeper", jerseyNumber: 1, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } },
       { name: "IK", position: "Defender", jerseyNumber: 2, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } },
       { name: "Happy", position: "Midfielder", jerseyNumber: 3, stats: { goals: 0, assists: 0, cleanSheets: 0, tackles: 0, saves: 0, gamesPlayed: 0, skillRating: 3 } },
