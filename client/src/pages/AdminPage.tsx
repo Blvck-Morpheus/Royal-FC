@@ -1,7 +1,21 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet";
+import AdminLogin from "@/components/AdminLogin";
+import TournamentManagement from "@/components/TournamentManagement";
+import { User } from "@shared/schema";
 
 const AdminPage = () => {
+  const [user, setUser] = useState<User | null>(null);
+
+  const handleLoginSuccess = (userData: User) => {
+    setUser(userData);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    // Clear any stored tokens
+    localStorage.removeItem('auth-token');
+  };
 
   return (
     <>
@@ -17,10 +31,30 @@ const AdminPage = () => {
             <p className="text-gray-600 mt-2">Manage match results, player stats, and tournaments</p>
           </div>
 
-          <div className="max-w-md mx-auto bg-white rounded-lg shadow-xl p-6">
-            <h2 className="text-xl font-bold mb-4">Admin Login</h2>
-            <p className="text-gray-600 mb-6">Authentication system is being updated. Please check back soon.</p>
-          </div>
+          {!user ? (
+            <div className="max-w-md mx-auto">
+              <AdminLogin onLoginSuccess={handleLoginSuccess} />
+            </div>
+          ) : (
+            <div className="space-y-8">
+              <div className="bg-white rounded-lg shadow-xl p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <div>
+                    <h2 className="text-xl font-bold">Welcome, {user.username}!</h2>
+                    <p className="text-gray-600">Role: {user.role}</p>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
+              
+              <TournamentManagement />
+            </div>
+          )}
         </div>
       </section>
     </>

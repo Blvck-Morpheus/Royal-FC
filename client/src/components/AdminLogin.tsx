@@ -95,11 +95,20 @@ const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
         return;
       }
 
+      // Handle both old format (direct user) and new format (user + token)
+      const user = userData.user || userData;
+      const token = userData.token;
+
+      // Store token if provided (for Vercel compatibility)
+      if (token) {
+        localStorage.setItem('auth-token', token);
+      }
+
       // Check if user role matches requested login type
-      if (userData.role !== data.loginType) {
+      if (user.role !== data.loginType) {
         toast({
           title: "Access Denied",
-          description: `You do not have ${data.loginType} privileges. Your role is ${userData.role}.`,
+          description: `You do not have ${data.loginType} privileges. Your role is ${user.role}.`,
           variant: "destructive",
         });
         return;
@@ -107,10 +116,10 @@ const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
 
       toast({
         title: "Login successful",
-        description: `You are now logged in as ${userData.role === "admin" ? "a main admin" : "an exco member"}`,
+        description: `You are now logged in as ${user.role === "admin" ? "a main admin" : "an exco member"}`,
       });
 
-      onLoginSuccess(userData);
+      onLoginSuccess(user);
     } catch (error) {
       console.error("Login error:", error);
       toast({
