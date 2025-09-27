@@ -94,7 +94,22 @@ const PlayerManagement = () => {
       queryClient.invalidateQueries({ queryKey: ["/api/players"] });
       toast({ title: "Success", description: "Player updated successfully" });
       setEditingPlayer(null);
-      form.reset();
+      setIsCreating(false);
+      form.reset({
+        name: "",
+        position: "Midfielder",
+        jerseyNumber: 1,
+        photoUrl: "",
+        stats: {
+          goals: 0,
+          assists: 0,
+          cleanSheets: 0,
+          tackles: 0,
+          saves: 0,
+          gamesPlayed: 0,
+          skillRating: 3,
+        },
+      });
     },
     onError: (error) => {
       toast({
