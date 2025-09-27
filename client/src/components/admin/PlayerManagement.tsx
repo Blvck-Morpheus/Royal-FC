@@ -66,8 +66,8 @@ const PlayerManagement = () => {
   // Create player mutation
   const createPlayer = useMutation({
     mutationFn: async (data: InsertPlayer) => {
-      const response = await apiRequest("POST", "/api/players", data);
-      return response.json();
+      const { data: result } = await apiRequest("POST", "/api/players", data);
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/players"] });
@@ -87,8 +87,8 @@ const PlayerManagement = () => {
   // Update player mutation
   const updatePlayer = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<Player> }) => {
-      const response = await apiRequest("PUT", `/api/players/${id}`, data);
-      return response.json();
+      const { data: result } = await apiRequest("PUT", `/api/players/${id}`, data);
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/players"] });
@@ -108,8 +108,8 @@ const PlayerManagement = () => {
   // Delete player mutation
   const deletePlayer = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("DELETE", `/api/players/${id}`);
-      return response.json();
+      const { data: result } = await apiRequest("DELETE", `/api/players/${id}`);
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/players"] });

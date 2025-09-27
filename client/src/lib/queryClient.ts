@@ -25,12 +25,16 @@ export async function apiRequest<T = any>(
 ): Promise<{ response: Response; data: T }> {
   const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
 
+  // Get JWT token from localStorage
+  const token = localStorage.getItem('auth-token');
+
   try {
     const response = await fetch(fullUrl, {
       method,
       headers: {
         ...(data ? { "Content-Type": "application/json" } : {}),
         "Accept": "application/json",
+        ...(token ? { "Authorization": `Bearer ${token}` } : {}),
       },
       body: data ? JSON.stringify(data) : undefined,
       credentials: "include",
@@ -81,10 +85,14 @@ export const getQueryFn: <T>(options: {
     const url = queryKey[0] as string;
     const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
 
+    // Get JWT token from localStorage
+    const token = localStorage.getItem('auth-token');
+
     try {
       const res = await fetch(fullUrl, {
         headers: {
           "Accept": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {}),
         },
         credentials: "include",
         mode: "cors",
