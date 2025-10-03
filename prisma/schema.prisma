@@ -14,41 +14,116 @@ model User {
   id        Int      @id @default(autoincrement())
   username  String   @unique
   password  String
-  role      String   @default("user")
-  createdAt DateTime @default(now())
+  role      String   @default("exco") // admin or exco
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("users")
 }
 
 model Player {
   id           Int      @id @default(autoincrement())
   name         String
   position     String
-  jerseyNumber Int?
-  stats        Json?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  jerseyNumber Int      @map("jersey_number")
+  photoUrl     String?  @map("photo_url")
+  stats        Json     @default("{\"goals\":0,\"assists\":0,\"cleanSheets\":0,\"tackles\":0,\"saves\":0,\"gamesPlayed\":0,\"skillRating\":3,\"teamWins\":0,\"teamLosses\":0,\"teamDraws\":0}")
+  badges       Json     @default("[]")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  matchResults MatchResult[]
+
+  @@map("players")
 }
 
 model Tournament {
-  id        Int       @id @default(autoincrement())
-  name      String
-  status    String    @default("active")
-  startDate DateTime
-  endDate   DateTime?
-  fixtures  Fixture[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id          Int       @id @default(autoincrement())
+  name        String
+  status      String    @default("active")
+  startDate   DateTime  @map("start_date")
+  endDate     DateTime  @map("end_date")
+  description String?
+  format      String    // 5-a-side, 7-a-side, 11-a-side
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  teams    TournamentTeam[]
+  fixtures Fixture[]
+
+  @@map("tournaments")
+}
+
+model TournamentTeam {
+  id            Int      @id @default(autoincrement())
+  tournamentId  Int      @map("tournament_id")
+  name          String
+  captainId     Int?     @map("captain_id")
+  played        Int      @default(0)
+  won           Int      @default(0)
+  drawn         Int      @default(0)
+  lost          Int      @default(0)
+  goalsFor      Int      @default(0) @map("goals_for")
+  goalsAgainst  Int      @default(0) @map("goals_against")
+  points        Int      @default(0)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  tournament    Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  homeFixtures  Fixture[]  @relation("HomeTeam")
+  awayFixtures  Fixture[]  @relation("AwayTeam")
+
+  @@map("tournament_teams")
 }
 
 model Fixture {
-  id           Int        @id @default(autoincrement())
-  tournament   Tournament @relation(fields: [tournamentId], references: [id])
-  tournamentId Int
-  homeTeamId   Int
-  awayTeamId   Int
-  homeScore    Int?
-  awayScore    Int?
-  status       String     @default("scheduled")
-  matchDate    DateTime
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-} 
+  id              Int       @id @default(autoincrement())
+  tournamentId    Int       @map("tournament_id")
+  homeTeamId      Int       @map("home_team_id")
+  awayTeamId      Int       @map("away_team_id")
+  homeTeamName    String    @map("home_team_name")
+  awayTeamName    String    @map("away_team_name")
+  homeTeamCaptain String?   @map("home_team_captain")
+  awayTeamCaptain String?   @map("away_team_captain")
+  homeTeamScore   Int?      @map("home_team_score")
+  awayTeamScore   Int?      @map("away_team_score")
+  date            DateTime
+  location        String
+  status          String    @default("scheduled") // scheduled, in_progress, completed, cancelled
+  tournamentName  String?   @map("tournament_name")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  tournament   Tournament     @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  homeTeam     TournamentTeam @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam     TournamentTeam @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  matchResults MatchResult[]
+
+  @@map("fixtures")
+}
+
+model MatchResult {
+  id         Int      @id @default(autoincrement())
+  fixtureId  Int      @map("fixture_id")
+  playerId   Int      @map("player_id")
+  goals      Int      @default(0)
+  assists    Int      @default(0)
+  cleanSheet Boolean  @default(false) @map("clean_sheet")
+  tackles    Int      @default(0)
+  saves      Int      @default(0)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  fixture Fixture @relation(fields: [fixtureId], references: [id], onDelete: Cascade)
+  player  Player  @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@map("match_results")
+}
+
+model ContactForm {
+  id            Int      @id @default(autoincrement())
+  fullName      String   @map("full_name")
+  email         String
+  phone         String
+  position      String
+  experience    String
+  message       String
+  termsAccepted Boolean  @map("terms_accepted")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("contact_forms")
+}

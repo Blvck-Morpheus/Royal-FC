@@ -1,6 +1,7 @@
 import { MemStorage } from './storage';
 import { TeamGenerationRequest, GeneratedTeam, User, InsertUser, Player, PlayerMetrics, Tournament, TournamentTeam, CreateTournamentInput, CreateTournamentTeamInput } from '@shared/schema';
 import { AuthService } from './authService';
+import { prismaStorage } from './prisma-storage';
 
 // Extend the MemStorage class to add the team generator implementation
 export class MemStorageImpl extends MemStorage {
@@ -462,4 +463,9 @@ export class MemStorageImpl extends MemStorage {
 }
 
 // Create and export a singleton instance
-export const storage = new MemStorageImpl();
+// Use Prisma storage in production, MemStorage in development
+const USE_DATABASE = process.env.DATABASE_URL && process.env.NODE_ENV === 'production';
+
+export const storage = USE_DATABASE ? prismaStorage : new MemStorageImpl();
+
+console.log(`[storage] Using ${USE_DATABASE ? 'Prisma (PostgreSQL)' : 'In-Memory'} storage`);
